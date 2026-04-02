@@ -152,6 +152,11 @@ export default function MemoryMode() {
         });
     };
 
+    // Convert settings load to visual percentage (simulated)
+    const memoryDifficultyPct = Math.min(100, Math.max(10,
+        ((settings.sequenceLength || 3) / 10) * 100
+    )).toFixed(0);
+
     return (
         <div className="layout-content-container flex flex-col w-full flex-1 gap-6">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -179,6 +184,18 @@ export default function MemoryMode() {
             </div>
 
             <div className="relative flex flex-col items-center justify-center grow min-h-[400px] md:min-h-[500px] bg-white dark:bg-slate-900 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800 p-8 overflow-hidden shadow-inner">
+
+                {/* Adaptive Indicators: Difficulty Bar */}
+                <div className="absolute top-6 left-1/2 -translate-x-1/2 w-full max-w-md px-10 z-20 pointer-events-none">
+                    <div className="flex justify-between items-end mb-2">
+                        <span className="text-xs font-bold text-slate-500 uppercase tracking-tighter">Difficulty Level</span>
+                        <span className="text-xs font-bold text-primary">{memoryDifficultyPct}%</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${memoryDifficultyPct}%` }}></div>
+                    </div>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 text-center italic">Difficulty adjusting based on performance...</p>
+                </div>
 
                 {/* Memory Grid */}
                 <div className="relative w-full max-w-sm aspect-square flex flex-col items-center justify-center z-10">
@@ -224,7 +241,7 @@ export default function MemoryMode() {
 
                 {/* Status Indicator */}
                 {isPlaying && (
-                    <div className="absolute top-6 left-1/2 -translate-x-1/2">
+                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
                         <div className={`px-6 py-2 rounded-full font-bold text-sm tracking-wider uppercase transition-colors ${gameState === 'showing' ? 'bg-primary/20 text-primary border border-primary/30' :
                                 gameState === 'waiting' ? 'bg-emerald-500/20 text-emerald-500 border border-emerald-500/30' :
                                     'bg-slate-100 dark:bg-slate-800 text-slate-400'

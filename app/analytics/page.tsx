@@ -113,12 +113,12 @@ export default function Analytics() {
             <div className="layout-container flex h-full grow flex-col">
                 {/* Top Navigation Bar */}
                 <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark px-6 md:px-10 py-3 sticky top-0 z-50">
-                    <div className="flex items-center gap-4">
+                    <Link href="/" className="flex items-center gap-4 hover:opacity-80 transition-opacity cursor-pointer">
                         <div className="text-primary size-8 flex items-center justify-center">
                             <span className="material-symbols-outlined text-3xl">psychology</span>
                         </div>
                         <h2 className="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-[-0.015em]">NeuroBoost Analytics</h2>
-                    </div>
+                    </Link>
                     <div className="flex flex-1 justify-end gap-4 md:gap-8 items-center">
                         <nav className="hidden md:flex gap-6">
                             <Link className="text-slate-500 dark:text-slate-400 hover:text-primary font-medium flex items-center gap-2 transition-colors" href="/">

@@ -190,17 +190,18 @@ export default function FocusMode() {
                 </div>
             </div>
 
-            <div className="relative flex flex-col items-center justify-center grow min-h-[400px] md:min-h-[500px] bg-slate-50 dark:bg-slate-800 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 p-8 overflow-hidden shadow-inner">
+            <div className="relative flex flex-col items-center justify-center grow min-h-[400px] md:min-h-[500px] bg-white dark:bg-slate-900 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800 p-8 overflow-hidden shadow-inner">
 
-                {/* Adaptive Indicators: Complexity Bar */}
-                <div className="absolute top-6 left-1/2 -translate-x-1/2 w-full max-w-md px-10">
+                {/* Adaptive Indicators: Difficulty Bar */}
+                <div className="absolute top-6 left-1/2 -translate-x-1/2 w-full max-w-md px-10 z-20 pointer-events-none">
                     <div className="flex justify-between items-end mb-2">
-                        <span className="text-xs font-bold text-slate-500 uppercase tracking-tighter">Visual Complexity</span>
+                        <span className="text-xs font-bold text-slate-500 uppercase tracking-tighter">Difficulty Level</span>
                         <span className="text-xs font-bold text-primary">{complexityPct}%</span>
                     </div>
-                    <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-900 rounded-full overflow-hidden">
+                    <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                         <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${complexityPct}%` }}></div>
                     </div>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 text-center italic">Difficulty adjusting based on performance...</p>
                 </div>
 
                 {/* Central Game Area */}

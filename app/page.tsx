@@ -11,12 +11,12 @@ export default function Home() {
             <div className="layout-container flex h-full grow flex-col">
                 {/* Top Navigation Bar */}
                 <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 lg:px-10 py-3 sticky top-0 z-50">
-                    <div className="flex items-center gap-4 text-primary">
+                    <Link href="/" className="flex items-center gap-4 text-primary hover:opacity-80 transition-opacity cursor-pointer">
                         <div className="size-8 flex items-center justify-center bg-primary/10 rounded-lg">
                             <span className="material-symbols-outlined text-primary font-bold">psychology</span>
                         </div>
                         <h2 className="text-slate-900 dark:text-white text-xl font-bold leading-tight tracking-tight">NeuroBoost</h2>
-                    </div>
+                    </Link>
                     <div className="flex flex-1 justify-end gap-4 lg:gap-8 items-center">
                         <nav className="hidden md:flex gap-6">
                             <Link className="text-primary font-semibold flex items-center gap-2 border-b-2 border-primary pb-1" href="/">

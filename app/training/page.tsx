@@ -13,12 +13,12 @@ export default function Training() {
         <div className="layout-container flex h-full grow flex-col min-h-screen">
             {/* Header / Top Navigation */}
             <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-slate-800 px-6 md:px-10 py-3 bg-background-light dark:bg-background-dark">
-                <div className="flex items-center gap-4">
+                <Link href="/" className="flex items-center gap-4 hover:opacity-80 transition-opacity cursor-pointer">
                     <div className="text-primary size-8 flex items-center justify-center">
                         <span className="material-symbols-outlined text-3xl">psychology</span>
                     </div>
                     <h2 className="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight">NeuroBoost</h2>
-                </div>
+                </Link>
                 <div className="flex flex-1 justify-end gap-6 items-center">
                     <nav className="hidden md:flex items-center gap-8">
                         <Link className="text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors" href="/">Dashboard</Link>
