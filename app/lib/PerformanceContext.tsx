@@ -1,5 +1,7 @@
 "use client";
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useAuth } from './AuthContext';
+import { supabase } from './supabaseClient';
 
 // Data models
 export interface GameSession {
@@ -7,11 +9,11 @@ export interface GameSession {
     timestamp: number;
     mode: 'reflex' | 'memory' | 'focus';
     duration: number; // in seconds
-    score: number;
+    score: number; // local rendering proxy
     accuracy: number; // 0-100
-    avgReactionTime?: number; // mainly for reflex
+    avgReactionTime?: number;
     highestLevelReached: number;
-    difficultySettings: any; // snapshot of what adaptive engine set
+    difficultySettings: any;
 }
 
 export interface UserProgress {
@@ -28,7 +30,6 @@ interface PerformanceContextType {
     sessions: GameSession[];
     progress: UserProgress;
     addSession: (session: Omit<GameSession, 'id' | 'timestamp'>) => void;
-    updateProgress: (updates: Partial<UserProgress>) => void;
     clearHistory: () => void;
 }
 
@@ -45,84 +46,164 @@ const defaultProgress: UserProgress = {
 const PerformanceContext = createContext<PerformanceContextType | undefined>(undefined);
 
 export function PerformanceProvider({ children }: { children: ReactNode }) {
+    const { user } = useAuth();
     const [sessions, setSessions] = useState<GameSession[]>([]);
     const [progress, setProgress] = useState<UserProgress>(defaultProgress);
     const [isLoaded, setIsLoaded] = useState(false);
 
-    // Load from localStorage on mount
+    // Initial Database Pull (Cloud Fetch)
     useEffect(() => {
-        try {
-            const storedSessions = localStorage.getItem('neuroboost_sessions');
-            const storedProgress = localStorage.getItem('neuroboost_progress');
+        async function fetchCloudData() {
+            if (!user) {
+                // Anonymous Player Mode - Use Local Storage
+                try {
+                    const storedSessions = localStorage.getItem('neuroboost_sessions');
+                    const storedProgress = localStorage.getItem('neuroboost_progress');
+                    if (storedSessions) setSessions(JSON.parse(storedSessions));
+                    if (storedProgress) setProgress(JSON.parse(storedProgress));
+                } catch (e) {
+                    console.error("Failed to load generic local data", e);
+                } finally {
+                    setIsLoaded(true);
+                }
+                return;
+            }
 
-            if (storedSessions) setSessions(JSON.parse(storedSessions));
-            if (storedProgress) setProgress(JSON.parse(storedProgress));
+            // Authenticated Player Mode - Fetch natively from Supabase
+            try {
+                const { data: logsData, error: logsError } = await supabase
+                    .from('session_logs')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .order('session_date', { ascending: false })
+                    .limit(100);
+                
+                if (logsError) throw logsError;
 
-            // Calculate streak logic here if needed based on storedProgress.lastActive
+                const { data: statsData, error: statsError } = await supabase
+                    .from('user_stats')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .maybeSingle(); // maybeSingle allows empty state
+                
+                if (statsError) throw statsError;
 
-            setIsLoaded(true);
-        } catch (e) {
-            console.error("Failed to load user data", e);
-            setIsLoaded(true);
+                if (logsData) {
+                    const mappedSessions: GameSession[] = logsData.map(log => ({
+                        id: log.id,
+                        timestamp: new Date(log.session_date).getTime(),
+                        mode: log.mode as 'reflex' | 'memory' | 'focus',
+                        duration: log.session_duration_seconds || log.completion_time_seconds || 60,
+                        score: 0, // Graphing mainly focuses on physical metrics now
+                        accuracy: log.accuracy_rate ? Number(log.accuracy_rate) : 0,
+                        avgReactionTime: log.reaction_time_ms_avg || 0,
+                        highestLevelReached: log.difficulty_progression_level || 1,
+                        difficultySettings: {} // Dynamic processing
+                    }));
+                    setSessions(mappedSessions.reverse()); // Format chronological for Chart.js
+                }
+
+                if (statsData) {
+                    setProgress(prev => ({
+                        ...prev,
+                        totalTrainingTime: (statsData.overall_play_time_seconds || 0) / 3600,
+                        highestMemoryLevel: statsData.current_memory_sequence || 1,
+                    }));
+                }
+            } catch (err) {
+                console.error("Failed to fetch cloud user context", err);
+            } finally {
+                setIsLoaded(true);
+            }
         }
-    }, []);
+        
+        fetchCloudData();
+    }, [user]);
 
-    // Save to localStorage when things change
+    // Local anonymous persistence driver
     useEffect(() => {
-        if (isLoaded) {
+        if (isLoaded && !user) {
             localStorage.setItem('neuroboost_sessions', JSON.stringify(sessions));
             localStorage.setItem('neuroboost_progress', JSON.stringify(progress));
         }
-    }, [sessions, progress, isLoaded]);
+    }, [sessions, progress, isLoaded, user]);
 
-    const addSession = (sessionData: Omit<GameSession, 'id' | 'timestamp'>) => {
+
+    // Action Method utilized by all Game Modules
+    const addSession = async (sessionData: Omit<GameSession, 'id' | 'timestamp'>) => {
         const newSession: GameSession = {
             ...sessionData,
             id: crypto.randomUUID(),
             timestamp: Date.now()
         };
 
+        // 1. Maintain React State for live Chart.js rendering
         setSessions(prev => [...prev, newSession]);
 
-        // Auto-update global progress based on new session
-        setProgress(prev => {
-            const newTotalTime = prev.totalTrainingTime + (newSession.duration / 3600);
-            let newHighestMemory = prev.highestMemoryLevel;
-            if (newSession.mode === 'memory' && newSession.highestLevelReached > prev.highestMemoryLevel) {
-                newHighestMemory = newSession.highestLevelReached;
-            }
+        let newTotalTime = progress.totalTrainingTime + (newSession.duration / 3600);
+        let newAvgRt = progress.avgReactionTime;
+        if (newSession.avgReactionTime) {
+            newAvgRt = progress.avgReactionTime === 0
+                ? newSession.avgReactionTime
+                : (progress.avgReactionTime * 0.9) + (newSession.avgReactionTime * 0.1);
+        }
 
-            // Rough moving average for reaction time
-            let newAvgRt = prev.avgReactionTime;
-            if (newSession.avgReactionTime) {
-                newAvgRt = prev.avgReactionTime === 0
-                    ? newSession.avgReactionTime
-                    : (prev.avgReactionTime * 0.9) + (newSession.avgReactionTime * 0.1);
-            }
+        setProgress(prev => ({
+            ...prev,
+            totalTrainingTime: newTotalTime,
+            avgReactionTime: newAvgRt,
+            highestMemoryLevel: Math.max(prev.highestMemoryLevel, sessionData.mode === 'memory' ? sessionData.highestLevelReached : 1),
+            lastActive: Date.now()
+        }));
 
-            return {
-                ...prev,
-                totalTrainingTime: newTotalTime,
-                highestMemoryLevel: newHighestMemory,
-                avgReactionTime: newAvgRt,
-                lastActive: Date.now()
+        // 2. Cloud Write Engine
+        if (user) {
+            // Push active log utilizing standard mapped integer types to avoid #22P02 Postgres errors
+            const logPayload = {
+                user_id: user.id,
+                mode: sessionData.mode,
+                session_date: new Date(newSession.timestamp).toISOString(),
+                reaction_time_ms_avg: sessionData.avgReactionTime ? Math.round(sessionData.avgReactionTime) : null,
+                accuracy_rate: sessionData.accuracy !== undefined ? Number(sessionData.accuracy.toFixed(2)) : null,
+                completion_time_seconds: sessionData.duration ? Math.round(sessionData.duration) : null,
+                memory_span_level: sessionData.mode === 'memory' ? sessionData.highestLevelReached : null,
+                difficulty_progression_level: sessionData.highestLevelReached
             };
-        });
-    };
+            
+            supabase.from('session_logs').insert(logPayload).then(({error}) => {
+                if (error) console.error("Could not upload log to Cloud: ", error);
+            });
 
-    const updateProgress = (updates: Partial<UserProgress>) => {
-        setProgress(prev => ({ ...prev, ...updates }));
+            // Persist the specific Adaptive Node Settings dynamically
+            const statsPayload: any = {
+                user_id: user.id,
+                overall_play_time_seconds: Math.round(newTotalTime * 3600),
+            };
+
+            if (sessionData.mode === 'reflex' && sessionData.difficultySettings) {
+                statsPayload.current_reflex_spawn_rate = sessionData.difficultySettings.spawnIntervalMs || 1000;
+            } else if (sessionData.mode === 'memory' && sessionData.difficultySettings) {
+                statsPayload.current_memory_sequence = sessionData.difficultySettings.sequenceLength || 3;
+            }
+
+            // Using standard update instead of explicit upsert if record doesn't trigger gracefully yet
+            supabase.from('user_stats').upsert(statsPayload, { onConflict: 'user_id' }).then(({error}) => {
+                if (error) console.error("Could not adapt difficulty engine trace: ", error);
+            });
+        }
     };
 
     const clearHistory = () => {
         setSessions([]);
         setProgress(defaultProgress);
-        localStorage.removeItem('neuroboost_sessions');
-        localStorage.removeItem('neuroboost_progress');
+        if (!user) {
+            localStorage.removeItem('neuroboost_sessions');
+            localStorage.removeItem('neuroboost_progress');
+        }
     };
 
     return (
-        <PerformanceContext.Provider value={{ sessions, progress, addSession, updateProgress, clearHistory }}>
+        <PerformanceContext.Provider value={{ sessions, progress, addSession, clearHistory }}>
             {children}
         </PerformanceContext.Provider>
     );
