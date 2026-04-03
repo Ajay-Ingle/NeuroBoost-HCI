@@ -62,7 +62,17 @@ export function PerformanceProvider({ children }: { children: ReactNode }) {
                     const storedSessions = localStorage.getItem('neuroboost_sessions');
                     const storedProgress = localStorage.getItem('neuroboost_progress');
                     if (storedSessions) setSessions(JSON.parse(storedSessions));
-                    if (storedProgress) setProgress(JSON.parse(storedProgress));
+                    if (storedProgress) {
+                        const parsed = JSON.parse(storedProgress);
+                        // Calculate local streak from lastActive
+                        if (parsed.lastActive) {
+                            const lastDate = new Date(parsed.lastActive);
+                            const today = new Date();
+                            const diffDays = Math.floor((today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+                            if (diffDays > 1) parsed.streak = 0; // Missed a day, reset
+                        }
+                        setProgress(parsed);
+                    }
                 } catch (e) {
                     console.error("Failed to load generic local data", e);
                 } finally {
@@ -114,6 +124,14 @@ export function PerformanceProvider({ children }: { children: ReactNode }) {
                         currentFocusDistractors: statsData.current_focus_distractors || 5,
                     }));
                 }
+
+                // Fetch real streak from dedicated Postgres RPC
+                const { data: streakData, error: streakError } = await supabase
+                    .rpc('get_user_streak', { target_user_id: user.id });
+                
+                if (!streakError && streakData !== null) {
+                    setProgress(prev => ({ ...prev, streak: streakData }));
+                }
             } catch (err) {
                 console.error("Failed to fetch cloud user context", err);
             } finally {
@@ -152,14 +170,41 @@ export function PerformanceProvider({ children }: { children: ReactNode }) {
                 : (progress.avgReactionTime * 0.9) + (newSession.avgReactionTime * 0.1);
         }
 
-        setProgress(prev => ({
-            ...prev,
-            totalTrainingTime: newTotalTime,
-            avgReactionTime: newAvgRt,
-            highestMemoryLevel: Math.max(prev.highestMemoryLevel, sessionData.mode === 'memory' ? sessionData.highestLevelReached : 1),
-            currentFocusDistractors: sessionData.mode === 'focus' && sessionData.difficultySettings ? sessionData.difficultySettings.distractorCount : prev.currentFocusDistractors,
-            lastActive: Date.now()
-        }));
+        setProgress(prev => {
+            // Streak logic: compare lastActive date to today
+            let newStreak = prev.streak;
+            if (prev.lastActive) {
+                const lastDate = new Date(prev.lastActive);
+                const today = new Date();
+                const lastDay = new Date(lastDate.getFullYear(), lastDate.getMonth(), lastDate.getDate());
+                const todayDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                const diffDays = Math.floor((todayDay.getTime() - lastDay.getTime()) / (1000 * 60 * 60 * 24));
+
+                if (diffDays === 0) {
+                    // Same day — keep current streak (already counted today)
+                    newStreak = Math.max(1, prev.streak);
+                } else if (diffDays === 1) {
+                    // Consecutive day — increment
+                    newStreak = prev.streak + 1;
+                } else {
+                    // Missed days — reset to 1
+                    newStreak = 1;
+                }
+            } else {
+                // First ever session
+                newStreak = 1;
+            }
+
+            return {
+                ...prev,
+                totalTrainingTime: newTotalTime,
+                avgReactionTime: newAvgRt,
+                highestMemoryLevel: Math.max(prev.highestMemoryLevel, sessionData.mode === 'memory' ? sessionData.highestLevelReached : 1),
+                currentFocusDistractors: sessionData.mode === 'focus' && sessionData.difficultySettings ? sessionData.difficultySettings.distractorCount : prev.currentFocusDistractors,
+                streak: newStreak,
+                lastActive: Date.now()
+            };
+        });
 
         // 2. Cloud Write Engine
         if (user) {

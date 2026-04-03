@@ -56,18 +56,23 @@ export default function Home() {
                                 </div>
                                 <div>
                                     <h1 className="text-slate-900 dark:text-white text-2xl lg:text-3xl font-bold">Welcome back!</h1>
-                                    <p className="text-slate-500 dark:text-slate-400 text-lg">Ready to push your limits today? You're on a {progress.streak}-day streak! 🔥</p>
+                                    <p className="text-slate-500 dark:text-slate-400 text-lg">
+                                        {progress.streak >= 7
+                                            ? `Incredible! ${progress.streak}-day streak — you're building real neural pathways! 🧠🔥`
+                                            : progress.streak >= 3
+                                            ? `Nice consistency! ${progress.streak}-day streak — keep the momentum! 🔥`
+                                            : progress.streak >= 1
+                                            ? `You're on a ${progress.streak}-day streak! Come back tomorrow to keep it alive! 🔥`
+                                            : `Start a training session today to begin your streak! 💪`
+                                        }
+                                    </p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl">
-                                <div className="text-right">
-                                    <p className="text-xs uppercase tracking-wider text-slate-400 font-bold">Current Level</p>
-                                    <p className="text-primary font-bold text-xl uppercase">Tier {progress.currentLevel}</p>
-                                </div>
-                                <div className="h-10 w-[2px] bg-slate-200 dark:border-slate-700"></div>
-                                <div className="text-center px-2">
-                                    <p className="text-xs uppercase tracking-wider text-slate-400 font-bold">Global Rank</p>
-                                    <p className="text-slate-900 dark:text-white font-bold text-xl">#{progress.globalRank.toLocaleString()}</p>
+                            <div className="flex items-center gap-3 bg-gradient-to-r from-orange-500/10 to-amber-500/10 dark:from-orange-500/20 dark:to-amber-500/20 px-6 py-4 rounded-xl border border-orange-500/20">
+                                <span className="material-symbols-outlined text-orange-500 text-4xl">local_fire_department</span>
+                                <div>
+                                    <p className="text-xs uppercase tracking-wider text-orange-600 dark:text-orange-400 font-bold">Daily Streak</p>
+                                    <p className="text-orange-600 dark:text-orange-400 font-bold text-3xl">{progress.streak} <span className="text-base font-medium">day{progress.streak !== 1 ? 's' : ''}</span></p>
                                 </div>
                             </div>
                         </div>
