@@ -14,6 +14,9 @@ import {
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { usePerformance } from "../lib/PerformanceContext";
+import { useAuth } from "../lib/AuthContext";
+import { supabase } from "../lib/supabaseClient";
+import { useState, useEffect } from "react";
 
 // Register Chart.js components
 ChartJS.register(
@@ -29,14 +32,34 @@ ChartJS.register(
 
 export default function Analytics() {
     const { progress, sessions } = usePerformance();
+    const { user } = useAuth();
+    const [cloudStats, setCloudStats] = useState<any>(null);
 
-    // Prepare chart data from sessions
+    useEffect(() => {
+        if (user) {
+            // Harness pure Postgres backend processing to generate daily statistical trends instantly
+            supabase.rpc('get_user_analytics', { target_user_id: user.id, days_back: 30 })
+                .then(({ data, error }) => {
+                    if (data) setCloudStats(data);
+                    if (error) console.error("Postgres RPC Analytics Error:", error);
+                });
+        }
+    }, [user]);
+
+    // Prepare chart data (Fallback to local Context if anonymous, override with Cloud RPC daily aggregates if authenticated)
     const reflexSessions = sessions.filter(s => s.mode === 'reflex');
 
-    const chartLabels = reflexSessions.map((s, i) => `Session ${i + 1}`);
+    const chartLabels = cloudStats?.daily_trends?.length > 0 
+        ? cloudStats.daily_trends.map((d: any) => new Date(d.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }))
+        : reflexSessions.map((s, i) => `Session ${i + 1}`);
 
-    const rtData = reflexSessions.map(s => s.avgReactionTime || 0);
-    const accuracyData = reflexSessions.map(s => s.accuracy);
+    const rtData = cloudStats?.daily_trends?.length > 0
+        ? cloudStats.daily_trends.map((d: any) => d.avg_rt || 0)
+        : reflexSessions.map(s => s.avgReactionTime || 0);
+
+    const accuracyData = cloudStats?.daily_trends?.length > 0
+        ? cloudStats.daily_trends.map((d: any) => d.avg_acc || 0)
+        : reflexSessions.map(s => s.accuracy);
 
     const chartData = {
         labels: chartLabels.length > 0 ? chartLabels : ['No Data'],
@@ -103,10 +126,11 @@ export default function Analytics() {
     };
 
     // Calculate some aggregate stats
-    const latestRt = reflexSessions.length > 0 ? reflexSessions[reflexSessions.length - 1].avgReactionTime : 0;
+    const latestRt = cloudStats ? cloudStats.avg_reflex_rt_ms : (reflexSessions.length > 0 ? reflexSessions[reflexSessions.length - 1].avgReactionTime : 0);
     const previousRt = reflexSessions.length > 1 ? reflexSessions[reflexSessions.length - 2].avgReactionTime : latestRt;
     const rtTrend = latestRt && previousRt ? (((latestRt - previousRt) / previousRt) * 100).toFixed(1) : '0';
     const isRtImprovement = parseFloat(rtTrend) < 0; // Negative means faster RT!
+    const globalAverageDisplay = cloudStats ? cloudStats.avg_reflex_rt_ms : progress.avgReactionTime;
 
     return (
         <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
@@ -191,7 +215,7 @@ export default function Analytics() {
                                 <div className="flex justify-between items-start mb-2">
                                     <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Global Average RT</p>
                                 </div>
-                                <h4 className="text-3xl font-bold text-slate-900 dark:text-slate-100">{progress.avgReactionTime > 0 ? Math.round(progress.avgReactionTime) : '--'}<span className="text-lg font-normal text-slate-400 ml-1">ms</span></h4>
+                                <h4 className="text-3xl font-bold text-slate-900 dark:text-slate-100">{globalAverageDisplay > 0 ? Math.round(globalAverageDisplay) : '--'}<span className="text-lg font-normal text-slate-400 ml-1">ms</span></h4>
                             </div>
                         </div>
 
