@@ -18,7 +18,7 @@ export default function FocusMode() {
     const [reactionTimes, setReactionTimes] = useState<number[]>([]);
 
     // Game Board State
-    interface Item { id: number; top: string; left: string; isTarget: boolean; icon: string; color: string }
+    interface Item { id: number; top: string; left: string; isTarget: boolean; icon: string; color: string; rotation: number }
     const [items, setItems] = useState<Item[]>([]);
 
     // Timing refs
@@ -30,15 +30,15 @@ export default function FocusMode() {
     );
 
     useEffect(() => {
-        if (progress.currentLevel > 1) {
+        if (progress.currentFocusDistractors > 0) {
             setSettings(prev => ({
                 ...prev,
-                level: progress.currentLevel,
-                distractorCount: 8 + (progress.currentLevel * 2),
-                similarityToTarget: Math.min(0.9, 0.2 + (progress.currentLevel * 0.1))
+                level: Math.floor(progress.currentFocusDistractors / 2),
+                distractorCount: progress.currentFocusDistractors,
+                similarityToTarget: Math.min(0.9, 0.2 + (progress.currentFocusDistractors * 0.05))
             }));
         }
-    }, [progress.currentLevel]);
+    }, [progress.currentFocusDistractors]);
 
     useEffect(() => {
         if (isPlaying && timeLeft > 0) {
@@ -78,7 +78,8 @@ export default function FocusMode() {
             left: Math.max(10, Math.random() * 80) + '%',
             isTarget: true,
             icon: targetIcon,
-            color: targetColor
+            color: targetColor,
+            rotation: Math.floor(Math.random() * 360)
         });
 
         // Add distractors
@@ -90,7 +91,8 @@ export default function FocusMode() {
                 left: Math.max(10, Math.random() * 80) + '%',
                 isTarget: false,
                 icon: useSimilar ? similarIcons[Math.floor(Math.random() * similarIcons.length)] : distinctIcons[Math.floor(Math.random() * distinctIcons.length)],
-                color: useSimilar ? similarColors[Math.floor(Math.random() * similarColors.length)] : distinctColors[Math.floor(Math.random() * distinctColors.length)]
+                color: useSimilar ? similarColors[Math.floor(Math.random() * similarColors.length)] : distinctColors[Math.floor(Math.random() * distinctColors.length)],
+                rotation: Math.floor(Math.random() * 360)
             });
         }
 
@@ -110,9 +112,10 @@ export default function FocusMode() {
 
             // Evaluate adaptation briefly
             const acc = ((hits + 1) / (hits + misses + 1)) * 100;
-            if (acc > 80 && rt < 2000) {
+            if (acc > 80 && rt < 2500) {
                 setSettings(prev => ({
                     ...prev,
+                    level: Math.floor(((prev.distractorCount || 8) + 1) / 2),
                     distractorCount: (prev.distractorCount || 8) + 1,
                     similarityToTarget: Math.min(0.9, (prev.similarityToTarget || 0.2) + 0.05)
                 }));
@@ -236,11 +239,11 @@ export default function FocusMode() {
                             <div
                                 key={item.id}
                                 onClick={(e) => { e.stopPropagation(); handleItemClick(item.isTarget); }}
-                                className="absolute flex items-center justify-center cursor-pointer hover:scale-110 active:scale-90 transition-transform p-2 bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700"
+                                className="absolute flex items-center justify-center cursor-pointer p-2 bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 hover:scale-110 active:scale-90 transition-transform"
                                 style={{
                                     top: item.top,
                                     left: item.left,
-                                    transform: 'translate(-50%, -50%)'
+                                    transform: `translate(-50%, -50%) rotate(${item.rotation}deg)`
                                 }}
                             >
                                 <span className={`material-symbols-outlined text-3xl md:text-4xl ${item.color}`}>

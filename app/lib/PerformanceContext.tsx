@@ -21,6 +21,7 @@ export interface UserProgress {
     globalRank: number;
     totalTrainingTime: number; // in hours
     highestMemoryLevel: number;
+    currentFocusDistractors: number; // For isolated focus tracking
     avgReactionTime: number; // global average
     streak: number;
     lastActive: number | null;
@@ -38,6 +39,7 @@ const defaultProgress: UserProgress = {
     globalRank: 10000,
     totalTrainingTime: 0,
     highestMemoryLevel: 1,
+    currentFocusDistractors: 5,
     avgReactionTime: 0,
     streak: 0,
     lastActive: null,
@@ -108,6 +110,8 @@ export function PerformanceProvider({ children }: { children: ReactNode }) {
                         ...prev,
                         totalTrainingTime: (statsData.overall_play_time_seconds || 0) / 3600,
                         highestMemoryLevel: statsData.current_memory_sequence || 1,
+                        currentLevel: Math.max(Math.floor((statsData.current_reflex_spawn_rate ? (2000 - statsData.current_reflex_spawn_rate)/100 : 1)), 1),
+                        currentFocusDistractors: statsData.current_focus_distractors || 5,
                     }));
                 }
             } catch (err) {
@@ -153,6 +157,7 @@ export function PerformanceProvider({ children }: { children: ReactNode }) {
             totalTrainingTime: newTotalTime,
             avgReactionTime: newAvgRt,
             highestMemoryLevel: Math.max(prev.highestMemoryLevel, sessionData.mode === 'memory' ? sessionData.highestLevelReached : 1),
+            currentFocusDistractors: sessionData.mode === 'focus' && sessionData.difficultySettings ? sessionData.difficultySettings.distractorCount : prev.currentFocusDistractors,
             lastActive: Date.now()
         }));
 
@@ -184,6 +189,8 @@ export function PerformanceProvider({ children }: { children: ReactNode }) {
                 statsPayload.current_reflex_spawn_rate = sessionData.difficultySettings.spawnIntervalMs || 1000;
             } else if (sessionData.mode === 'memory' && sessionData.difficultySettings) {
                 statsPayload.current_memory_sequence = sessionData.difficultySettings.sequenceLength || 3;
+            } else if (sessionData.mode === 'focus' && sessionData.difficultySettings) {
+                statsPayload.current_focus_distractors = sessionData.difficultySettings.distractorCount || 5;
             }
 
             // Using standard update instead of explicit upsert if record doesn't trigger gracefully yet
