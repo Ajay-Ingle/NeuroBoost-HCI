@@ -5,9 +5,11 @@ import { useState } from "react";
 import ReflexMode from "./components/ReflexMode";
 import MemoryMode from "./components/MemoryMode";
 import FocusMode from "./components/FocusMode";
+import { useAuth } from "../lib/AuthContext";
 
 export default function Training() {
     const [activeTab, setActiveTab] = useState<'reflex' | 'memory' | 'focus'>('reflex');
+    const { user, showAuthModal, signOut } = useAuth();
 
     return (
         <div className="layout-container flex h-full grow flex-col min-h-screen">
@@ -25,9 +27,19 @@ export default function Training() {
                         <Link className="text-primary text-sm font-bold border-b-2 border-primary pb-1" href="/training">Training</Link>
                         <Link className="text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors" href="/analytics">Stats</Link>
                     </nav>
-                    <button className="flex items-center justify-center rounded-xl h-10 w-10 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                        <span className="material-symbols-outlined">settings</span>
-                    </button>
+                    {user ? (
+                        <div className="flex items-center gap-3">
+                            <span className="text-xs font-bold text-emerald-500 hidden md:flex items-center gap-1 border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 rounded-full"><span className="material-symbols-outlined text-[14px]">cloud_done</span> Cloud Synced</span>
+                            <button onClick={signOut} className="flex items-center justify-center rounded-xl h-10 px-5 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-sm tracking-wide hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">
+                                Logout
+                            </button>
+                        </div>
+                    ) : (
+                        <button onClick={showAuthModal} className="flex items-center gap-2 justify-center rounded-xl h-10 px-5 bg-primary text-white font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all text-sm tracking-wide">
+                            <span className="material-symbols-outlined text-lg">cloud_upload</span>
+                            <span>Login to Sync</span>
+                        </button>
+                    )}
                 </div>
             </header>
 
