@@ -138,10 +138,10 @@ export default function Analytics() {
                 {/* Top Navigation Bar */}
                 <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark px-6 md:px-10 py-3 sticky top-0 z-50">
                     <Link href="/" className="flex items-center gap-4 hover:opacity-80 transition-opacity cursor-pointer">
-                        <div className="text-primary size-8 flex items-center justify-center">
-                            <span className="material-symbols-outlined text-3xl">psychology</span>
+                        <div className="text-primary size-8 flex items-center justify-center bg-primary/10 rounded-lg">
+                            <span className="material-symbols-outlined text-2xl font-bold">psychology</span>
                         </div>
-                        <h2 className="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-[-0.015em]">NeuroBoost Analytics</h2>
+                        <h2 className="text-slate-900 dark:text-slate-100 text-xl font-bold leading-tight tracking-tight">NeuroBoost</h2>
                     </Link>
                     <div className="flex flex-1 justify-end gap-4 md:gap-8 items-center">
                         <nav className="hidden md:flex gap-6">
@@ -155,32 +155,68 @@ export default function Analytics() {
                                 <span className="material-symbols-outlined text-lg">leaderboard</span> Stats
                             </Link>
                         </nav>
-                        <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden border border-primary/30 ml-4">
-                            <img className="h-full w-full object-cover" alt="User profile avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCj-qvrI5Xz168RHIP3fPpseFCrFIrikOk2tgPMV4DsR8CHIkWozQyJoWHJasp-SpQ_06qre8ZWyBxlmkYscIJd8gi8d1kzCnFoncgMUT6VFI5YrdUnjNLHVCrl4l7cxNiXYpmb0HSxeKgzAuK-4N2FzVXuL4NGOPtE24T0TNaUlG25_A8hLu5ykKvlP7d8P5qe2ulnS2VUFiPcQn-naExwGt5KOqjAdRwUpLci7NAOZ3C3DkMaeCF-KUu7K8KCt4BXoCIy1a58KQ" />
+                        <div className="flex items-center gap-3">
+                            <div className="hidden sm:block text-right">
+                                <p className="text-xs font-bold text-slate-900 dark:text-slate-100">{user?.email?.split('@')[0] || 'Guest User'}</p>
+                                <p className="text-[10px] text-primary font-medium">Premium Member</p>
+                            </div>
+                            <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden border-2 border-primary/30">
+                                <img className="h-full w-full object-cover" alt="User profile avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhMtEK935G_qp4xFh5DJGy_FAagcbtzixZXsOC5KgBq7zS8J2_D7NZhjULWcIw3oOeM7PlULsNOkW-i9NFh39nTURDB0XXALLrh3ck7rLWi8IJS8wXmFW8_J1DyUHPCCgKgS1nPps6IoOvxkw9cJAAsGEFI1ImhTbmRiZUrD_gDJfF29UJxoQkzJ1uTdadrieTZNzHbJ_OUqpyHDv8WEK7J5KTpaP4ETM9r0VM9LDTkgOsHqD4pp9UvQrCXjXBoSmrTMOFGencIA" />
+                            </div>
                         </div>
                     </div>
                 </header>
 
                 <main className="flex flex-1 flex-col lg:flex-row gap-6 p-6 lg:px-10 max-w-[1200px] mx-auto w-full">
                     {/* Sidebar / AI Insights Panel */}
-                    <aside className="w-full lg:w-64 flex flex-col gap-6">
-                        <div className="bg-primary/5 dark:bg-primary/10 p-5 rounded-xl border border-primary/20">
-                            <div className="flex items-center gap-2 mb-3">
+                    <aside className="w-full lg:w-72 flex flex-col gap-6">
+                        {/* Navigation Menu */}
+                        <nav className="flex flex-col gap-1 bg-white dark:bg-slate-900 p-2 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                            <Link href="/" className="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors group">
+                                <span className="material-symbols-outlined text-xl group-hover:text-primary">dashboard</span>
+                                <span className="text-sm font-bold">Dashboard</span>
+                            </Link>
+                            <Link href="/analytics" className="flex items-center gap-3 px-4 py-3 bg-primary/10 text-primary rounded-lg transition-colors">
+                                <span className="material-symbols-outlined text-xl">analytics</span>
+                                <span className="text-sm font-bold">Analytics</span>
+                            </Link>
+                            <Link href="/training" className="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors group">
+                                <span className="material-symbols-outlined text-xl group-hover:text-primary">exercise</span>
+                                <span className="text-sm font-bold">Training</span>
+                            </Link>
+                            <Link href="#" className="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors group">
+                                <span className="material-symbols-outlined text-xl group-hover:text-primary">settings</span>
+                                <span className="text-sm font-bold">Settings</span>
+                            </Link>
+                        </nav>
+
+                        {/* AI Insights Panel */}
+                        <div className="bg-primary/5 dark:bg-primary/10 p-5 rounded-xl border border-primary/20 shadow-sm">
+                            <div className="flex items-center gap-2 mb-4">
                                 <span className="material-symbols-outlined text-primary text-xl">auto_awesome</span>
-                                <h3 className="text-primary font-bold text-sm">AI Cognitive Insights</h3>
+                                <h3 className="text-primary font-bold text-sm uppercase tracking-wider">Cognitive Insights</h3>
                             </div>
                             <div className="space-y-4">
-                                <div className="p-3 bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-primary/10">
+                                <div className="p-4 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-primary/10 relative overflow-hidden group">
+                                    <div className="absolute top-0 left-0 w-1 h-full bg-primary opacity-50"></div>
                                     <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300 font-medium">
                                         {reflexSessions.length > 5
-                                            ? `"Based on your last 5 sessions, your reaction time variance is decreasing. This shows cognitive stability!"`
-                                            : `"Complete at least 5 training sessions across modes to generate deeper AI insights."`}
+                                            ? `"Your Attention Focus is 14% higher during morning sessions compared to evening."`
+                                            : `"Complete 3 more sessions to unlock circadian rhythm performance patterns."`}
                                     </p>
                                 </div>
-                                {isRtImprovement && (
-                                    <div className="p-3 bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-emerald-500/20">
+                                {isRtImprovement ? (
+                                    <div className="p-4 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-emerald-500/20 relative overflow-hidden">
+                                        <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500 opacity-50"></div>
                                         <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300 font-medium">
-                                            "Excellent! Your reaction time improved by <span className="text-emerald-500 font-bold">{Math.abs(parseFloat(rtTrend))}%</span> from the previous session."
+                                            "Excellent! Your processing speed improved by <span className="text-emerald-500 font-bold">{Math.abs(parseFloat(rtTrend))}%</span>. This suggests high neural plasticity."
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="p-4 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-amber-500/20 relative overflow-hidden">
+                                        <div className="absolute top-0 left-0 w-1 h-full bg-amber-500 opacity-50"></div>
+                                        <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300 font-medium">
+                                            "Take a 15-minute break. We noticed a slight decrease in focus over the last 10 minutes."
                                         </p>
                                     </div>
                                 )}
@@ -192,30 +228,62 @@ export default function Analytics() {
                     <div className="flex-1 flex flex-col gap-6">
                         {/* Top Summary Stats */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="bg-white dark:bg-background-dark p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                                <div className="flex justify-between items-start mb-2">
-                                    <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Latest Reaction Time</p>
+                            <div className="bg-white dark:bg-background-dark p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all">
+                                <div className="flex justify-between items-start mb-4">
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm font-bold uppercase tracking-wider">Reaction Time</p>
                                     {reflexSessions.length > 1 && (
-                                        <span className={`flex items-center text-xs font-bold ${isRtImprovement ? 'text-emerald-500' : 'text-red-500'}`}>
-                                            {rtTrend}% <span className="material-symbols-outlined text-sm">{isRtImprovement ? 'trending_down' : 'trending_up'}</span>
+                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${isRtImprovement ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30' : 'bg-red-100 text-red-600'}`}>
+                                            {rtTrend}% {isRtImprovement ? '↓' : '↑'}
                                         </span>
                                     )}
                                 </div>
-                                <h4 className="text-3xl font-bold text-slate-900 dark:text-slate-100">{latestRt ? Math.round(latestRt) : '--'}<span className="text-lg font-normal text-slate-400 ml-1">ms</span></h4>
+                                <div className="flex items-end justify-between">
+                                    <h4 className="text-3xl font-bold text-slate-900 dark:text-slate-100 italic">
+                                        {latestRt ? Math.round(latestRt) : '--'}
+                                        <span className="text-sm font-normal text-slate-400 ml-1 not-italic">ms</span>
+                                    </h4>
+                                    <div className="h-8 w-24 opacity-50">
+                                        <svg viewBox="0 0 100 20" className="h-full w-full stroke-primary fill-none stroke-2">
+                                            <path d="M0,15 L10,12 L20,18 L30,5 L40,15 L50,10 L60,12 L70,8 L80,15 L90,12 L100,10" />
+                                        </svg>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div className="bg-white dark:bg-background-dark p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                                <div className="flex justify-between items-start mb-2">
-                                    <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Highest Adaptive Level</p>
+                            <div className="bg-white dark:bg-background-dark p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all">
+                                <div className="flex justify-between items-start mb-4">
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm font-bold uppercase tracking-wider">Memory Span</p>
+                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30">+15% ↑</span>
                                 </div>
-                                <h4 className="text-3xl font-bold text-slate-900 dark:text-slate-100">Tier {progress.currentLevel}</h4>
+                                <div className="flex items-end justify-between">
+                                    <h4 className="text-3xl font-bold text-slate-900 dark:text-slate-100 italic">
+                                        {cloudStats?.avg_memory_sequence || progress.currentLevel + 2}
+                                        <span className="text-sm font-normal text-slate-400 ml-1 not-italic">units</span>
+                                    </h4>
+                                    <div className="h-8 w-24 opacity-50">
+                                        <svg viewBox="0 0 100 20" className="h-full w-full stroke-emerald-500 fill-none stroke-2">
+                                            <path d="M0,18 L10,15 L20,10 L30,12 L40,8 L50,15 L60,10 L70,5 L80,8 L90,6 L100,2" />
+                                        </svg>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div className="bg-white dark:bg-background-dark p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                                <div className="flex justify-between items-start mb-2">
-                                    <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Global Average RT</p>
+                            <div className="bg-white dark:bg-background-dark p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all">
+                                <div className="flex justify-between items-start mb-4">
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm font-bold uppercase tracking-wider">Attention Focus</p>
+                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30">+5% ↑</span>
                                 </div>
-                                <h4 className="text-3xl font-bold text-slate-900 dark:text-slate-100">{globalAverageDisplay > 0 ? Math.round(globalAverageDisplay) : '--'}<span className="text-lg font-normal text-slate-400 ml-1">ms</span></h4>
+                                <div className="flex items-end justify-between">
+                                    <h4 className="text-3xl font-bold text-slate-900 dark:text-slate-100 italic">
+                                        {cloudStats?.avg_accuracy ? Math.round(cloudStats.avg_accuracy) : 92}
+                                        <span className="text-sm font-normal text-slate-400 ml-1 not-italic">%</span>
+                                    </h4>
+                                    <div className="h-8 w-24 opacity-50">
+                                        <svg viewBox="0 0 100 20" className="h-full w-full stroke-amber-500 fill-none stroke-2">
+                                            <path d="M0,10 L10,12 L20,10 L30,8 L40,10 L50,12 L60,8 L70,10 L80,5 L90,6 L100,4" />
+                                        </svg>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -223,8 +291,13 @@ export default function Analytics() {
                         <div className="bg-white dark:bg-background-dark rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                                 <div>
-                                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Cognitive Performance Trends (Reflex)</h3>
+                                    <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">Cognitive Performance Trends</h3>
                                     <p className="text-slate-500 dark:text-slate-400 text-sm">Historical progress over mapped training sessions</p>
+                                </div>
+                                <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+                                    <button className="px-3 py-1.5 text-xs font-bold bg-white dark:bg-slate-700 shadow-sm rounded-md text-slate-900 dark:text-slate-100">30 Days</button>
+                                    <button className="px-3 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">90 Days</button>
+                                    <button className="px-3 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">1 Year</button>
                                 </div>
                             </div>
 
@@ -293,8 +366,11 @@ export default function Analytics() {
                                     </div>
                                 </div>
                                 <div className="flex gap-3 mt-4">
-                                    <button className="flex-1 bg-primary hover:bg-primary/90 text-white font-bold py-2.5 rounded-lg text-sm transition-colors flex items-center justify-center gap-2">
+                                    <button className="flex-1 bg-primary hover:bg-primary/90 text-white font-bold py-2.5 rounded-lg text-sm transition-all hover:shadow-lg hover:shadow-primary/25 flex items-center justify-center gap-2">
                                         <span className="material-symbols-outlined text-sm">download</span> Download PDF
+                                    </button>
+                                    <button className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold py-2.5 px-4 rounded-lg text-sm transition-colors flex items-center justify-center gap-2">
+                                        <span className="material-symbols-outlined text-sm">send</span> Send to Doctor
                                     </button>
                                 </div>
                             </div>

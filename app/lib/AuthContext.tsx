@@ -5,6 +5,7 @@ import AuthModal from "../components/AuthModal";
 
 interface AuthContextType {
   user: any;
+  loading: boolean;
   showAuthModal: () => void;
   signOut: () => Promise<void>;
 }
@@ -14,19 +15,30 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<any>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user || null);
-      if (session?.user) syncLocalDataToCloud(session.user.id);
+      const currentUser = session?.user || null;
+      setUser(currentUser);
+      setLoading(false);
+      
+      // Force registration prompt for any guest users on land
+      if (!currentUser) {
+        setModalOpen(true);
+      }
+      
+      if (currentUser) syncLocalDataToCloud(currentUser.id);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user || null);
-      if (event === 'SIGNED_IN' && session?.user) {
-        syncLocalDataToCloud(session.user.id);
+      const currentUser = session?.user || null;
+      setUser(currentUser);
+      if (event === 'SIGNED_IN' && currentUser) {
+        syncLocalDataToCloud(currentUser.id);
         setModalOpen(false); // Close modal on success
       }
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
@@ -71,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, showAuthModal: () => setModalOpen(true), signOut }}>
+    <AuthContext.Provider value={{ user, loading, showAuthModal: () => setModalOpen(true), signOut }}>
       {children}
       <AuthModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
     </AuthContext.Provider>
