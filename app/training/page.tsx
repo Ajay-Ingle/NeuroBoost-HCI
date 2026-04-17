@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ReflexMode from "./components/ReflexMode";
 import MemoryMode from "./components/MemoryMode";
 import FocusMode from "./components/FocusMode";
@@ -10,6 +10,14 @@ import { useAuth } from "../lib/AuthContext";
 export default function Training() {
     const [activeTab, setActiveTab] = useState<'reflex' | 'memory' | 'focus'>('reflex');
     const { user, showAuthModal, signOut } = useAuth();
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const mode = params.get('mode');
+        if (mode === 'memory' || mode === 'focus' || mode === 'reflex') {
+            setActiveTab(mode);
+        }
+    }, []);
 
     return (
         <div className="layout-container flex h-full grow flex-col min-h-screen">

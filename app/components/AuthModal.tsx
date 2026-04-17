@@ -32,9 +32,8 @@ export default function AuthModal({ isOpen, onClose }: { isOpen: boolean, onClos
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-4">
             <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl max-w-sm w-full border border-slate-200 dark:border-slate-800 shadow-2xl relative">
-                <button onClick={onClose} className="absolute top-4 right-4 text-slate-500 hover:text-slate-800 dark:hover:text-white">✕</button>
                 <div className="flex flex-col items-center mb-6">
                     <span className="material-symbols-outlined text-4xl text-primary mb-2">cloud_sync</span>
                     <h2 className="text-2xl font-bold text-slate-900 dark:text-white text-center">

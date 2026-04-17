@@ -33,9 +33,9 @@ export default function Home() {
                             <button className="flex size-10 cursor-pointer items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 transition-colors">
                                 <span className="material-symbols-outlined">notifications</span>
                             </button>
-                            <button className="flex size-10 cursor-pointer items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 transition-colors">
+                            <Link href="/profile" className="flex size-10 cursor-pointer items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 transition-colors" title="Edit Research Profile">
                                 <span className="material-symbols-outlined">settings</span>
-                            </button>
+                            </Link>
                         </div>
                         <div className="bg-primary/20 rounded-full size-10 overflow-hidden border-2 border-primary/30">
                             <img className="w-full h-full object-cover" alt="User profile avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhMtEK935G_qp4xFh5DJGy_FAagcbtzixZXsOC5KgBq7zS8J2_D7NZhjULWcIw3oOeM7PlULsNOkW-i9NFh39nTURDB0XXALLrh3ck7rLWi8IJS8wXmFW8_J1DyUHPCCgKgS1nPps6IoOvxkw9cJAAsGEFI1ImhTbmRiZUrD_gDJfF29UJxoQkzJ1uTdadrieTZNzHbJ_OUqpyHDv8WEK7J5KTpaP4ETM9r0VM9LDTkgOsHqD4pp9UvQrCXjXBoSmrTMOFGencIA" />
