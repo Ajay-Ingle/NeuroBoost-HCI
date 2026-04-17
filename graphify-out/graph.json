@@ -1,0 +1,640 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "label": "eslint.config.mjs",
+      "file_type": "code",
+      "source_file": "eslint.config.mjs",
+      "source_location": "L1",
+      "id": "eslint_config_mjs",
+      "community": 7,
+      "norm_label": "eslint.config.mjs"
+    },
+    {
+      "label": "next-env.d.ts",
+      "file_type": "code",
+      "source_file": "next-env.d.ts",
+      "source_location": "L1",
+      "id": "next_env_d_ts",
+      "community": 8,
+      "norm_label": "next-env.d.ts"
+    },
+    {
+      "label": "next.config.ts",
+      "file_type": "code",
+      "source_file": "next.config.ts",
+      "source_location": "L1",
+      "id": "next_config_ts",
+      "community": 9,
+      "norm_label": "next.config.ts"
+    },
+    {
+      "label": "postcss.config.mjs",
+      "file_type": "code",
+      "source_file": "postcss.config.mjs",
+      "source_location": "L1",
+      "id": "postcss_config_mjs",
+      "community": 10,
+      "norm_label": "postcss.config.mjs"
+    },
+    {
+      "label": "layout.tsx",
+      "file_type": "code",
+      "source_file": "app\\layout.tsx",
+      "source_location": "L1",
+      "id": "app_layout_tsx",
+      "community": 4,
+      "norm_label": "layout.tsx"
+    },
+    {
+      "label": "RootLayout()",
+      "file_type": "code",
+      "source_file": "app\\layout.tsx",
+      "source_location": "L14",
+      "id": "layout_rootlayout",
+      "community": 4,
+      "norm_label": "rootlayout()"
+    },
+    {
+      "label": "page.tsx",
+      "file_type": "code",
+      "source_file": "app\\page.tsx",
+      "source_location": "L1",
+      "id": "app_page_tsx",
+      "community": 1,
+      "norm_label": "page.tsx"
+    },
+    {
+      "label": "Home()",
+      "file_type": "code",
+      "source_file": "app\\page.tsx",
+      "source_location": "L6",
+      "id": "page_home",
+      "community": 1,
+      "norm_label": "home()"
+    },
+    {
+      "label": "page.tsx",
+      "file_type": "code",
+      "source_file": "app\\analytics\\page.tsx",
+      "source_location": "L1",
+      "id": "app_analytics_page_tsx",
+      "community": 11,
+      "norm_label": "page.tsx"
+    },
+    {
+      "label": "AuthModal.tsx",
+      "file_type": "code",
+      "source_file": "app\\components\\AuthModal.tsx",
+      "source_location": "L1",
+      "id": "app_components_authmodal_tsx",
+      "community": 5,
+      "norm_label": "authmodal.tsx"
+    },
+    {
+      "label": "handleAuth()",
+      "file_type": "code",
+      "source_file": "app\\components\\AuthModal.tsx",
+      "source_location": "L14",
+      "id": "authmodal_handleauth",
+      "community": 5,
+      "norm_label": "handleauth()"
+    },
+    {
+      "label": "adaptiveEngine.ts",
+      "file_type": "code",
+      "source_file": "app\\lib\\adaptiveEngine.ts",
+      "source_location": "L1",
+      "id": "app_lib_adaptiveengine_ts",
+      "community": 0,
+      "norm_label": "adaptiveengine.ts"
+    },
+    {
+      "label": "AdaptiveEngine",
+      "file_type": "code",
+      "source_file": "app\\lib\\adaptiveEngine.ts",
+      "source_location": "L24",
+      "id": "adaptiveengine_adaptiveengine",
+      "community": 0,
+      "norm_label": "adaptiveengine"
+    },
+    {
+      "label": ".getInitialSettings()",
+      "file_type": "code",
+      "source_file": "app\\lib\\adaptiveEngine.ts",
+      "source_location": "L26",
+      "id": "adaptiveengine_adaptiveengine_getinitialsettings",
+      "community": 3,
+      "norm_label": ".getinitialsettings()"
+    },
+    {
+      "label": ".evaluateReflexPerformance()",
+      "file_type": "code",
+      "source_file": "app\\lib\\adaptiveEngine.ts",
+      "source_location": "L31",
+      "id": "adaptiveengine_adaptiveengine_evaluatereflexperformance",
+      "community": 0,
+      "norm_label": ".evaluatereflexperformance()"
+    },
+    {
+      "label": ".evaluateMemoryPerformance()",
+      "file_type": "code",
+      "source_file": "app\\lib\\adaptiveEngine.ts",
+      "source_location": "L62",
+      "id": "adaptiveengine_adaptiveengine_evaluatememoryperformance",
+      "community": 0,
+      "norm_label": ".evaluatememoryperformance()"
+    },
+    {
+      "label": "AuthContext.tsx",
+      "file_type": "code",
+      "source_file": "app\\lib\\AuthContext.tsx",
+      "source_location": "L1",
+      "id": "app_lib_authcontext_tsx",
+      "community": 6,
+      "norm_label": "authcontext.tsx"
+    },
+    {
+      "label": "AuthProvider()",
+      "file_type": "code",
+      "source_file": "app\\lib\\AuthContext.tsx",
+      "source_location": "L15",
+      "id": "authcontext_authprovider",
+      "community": 6,
+      "norm_label": "authprovider()"
+    },
+    {
+      "label": "PerformanceContext.tsx",
+      "file_type": "code",
+      "source_file": "app\\lib\\PerformanceContext.tsx",
+      "source_location": "L1",
+      "id": "app_lib_performancecontext_tsx",
+      "community": 1,
+      "norm_label": "performancecontext.tsx"
+    },
+    {
+      "label": "PerformanceProvider()",
+      "file_type": "code",
+      "source_file": "app\\lib\\PerformanceContext.tsx",
+      "source_location": "L50",
+      "id": "performancecontext_performanceprovider",
+      "community": 1,
+      "norm_label": "performanceprovider()"
+    },
+    {
+      "label": "usePerformance()",
+      "file_type": "code",
+      "source_file": "app\\lib\\PerformanceContext.tsx",
+      "source_location": "L264",
+      "id": "performancecontext_useperformance",
+      "community": 1,
+      "norm_label": "useperformance()"
+    },
+    {
+      "label": "supabaseClient.ts",
+      "file_type": "code",
+      "source_file": "app\\lib\\supabaseClient.ts",
+      "source_location": "L1",
+      "id": "app_lib_supabaseclient_ts",
+      "community": 12,
+      "norm_label": "supabaseclient.ts"
+    },
+    {
+      "label": "page.tsx",
+      "file_type": "code",
+      "source_file": "app\\training\\page.tsx",
+      "source_location": "L1",
+      "id": "app_training_page_tsx",
+      "community": 13,
+      "norm_label": "page.tsx"
+    },
+    {
+      "label": "FocusMode.tsx",
+      "file_type": "code",
+      "source_file": "app\\training\\components\\FocusMode.tsx",
+      "source_location": "L1",
+      "id": "app_training_components_focusmode_tsx",
+      "community": 3,
+      "norm_label": "focusmode.tsx"
+    },
+    {
+      "label": "FocusMode()",
+      "file_type": "code",
+      "source_file": "app\\training\\components\\FocusMode.tsx",
+      "source_location": "L7",
+      "id": "focusmode_focusmode",
+      "community": 3,
+      "norm_label": "focusmode()"
+    },
+    {
+      "label": "MemoryMode.tsx",
+      "file_type": "code",
+      "source_file": "app\\training\\components\\MemoryMode.tsx",
+      "source_location": "L1",
+      "id": "app_training_components_memorymode_tsx",
+      "community": 2,
+      "norm_label": "memorymode.tsx"
+    },
+    {
+      "label": "startNextRound()",
+      "file_type": "code",
+      "source_file": "app\\training\\components\\MemoryMode.tsx",
+      "source_location": "L43",
+      "id": "memorymode_startnextround",
+      "community": 2,
+      "norm_label": "startnextround()"
+    },
+    {
+      "label": "playSequence()",
+      "file_type": "code",
+      "source_file": "app\\training\\components\\MemoryMode.tsx",
+      "source_location": "L56",
+      "id": "memorymode_playsequence",
+      "community": 2,
+      "norm_label": "playsequence()"
+    },
+    {
+      "label": "handleTileClick()",
+      "file_type": "code",
+      "source_file": "app\\training\\components\\MemoryMode.tsx",
+      "source_location": "L73",
+      "id": "memorymode_handletileclick",
+      "community": 0,
+      "norm_label": "handletileclick()"
+    },
+    {
+      "label": "handleRoundEnd()",
+      "file_type": "code",
+      "source_file": "app\\training\\components\\MemoryMode.tsx",
+      "source_location": "L94",
+      "id": "memorymode_handleroundend",
+      "community": 0,
+      "norm_label": "handleroundend()"
+    },
+    {
+      "label": "startGame()",
+      "file_type": "code",
+      "source_file": "app\\training\\components\\MemoryMode.tsx",
+      "source_location": "L125",
+      "id": "memorymode_startgame",
+      "community": 2,
+      "norm_label": "startgame()"
+    },
+    {
+      "label": "endGame()",
+      "file_type": "code",
+      "source_file": "app\\training\\components\\MemoryMode.tsx",
+      "source_location": "L135",
+      "id": "memorymode_endgame",
+      "community": 2,
+      "norm_label": "endgame()"
+    },
+    {
+      "label": "ReflexMode.tsx",
+      "file_type": "code",
+      "source_file": "app\\training\\components\\ReflexMode.tsx",
+      "source_location": "L1",
+      "id": "app_training_components_reflexmode_tsx",
+      "community": 3,
+      "norm_label": "reflexmode.tsx"
+    },
+    {
+      "label": "ReflexMode()",
+      "file_type": "code",
+      "source_file": "app\\training\\components\\ReflexMode.tsx",
+      "source_location": "L7",
+      "id": "reflexmode_reflexmode",
+      "community": 3,
+      "norm_label": "reflexmode()"
+    }
+  ],
+  "links": [
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app\\layout.tsx",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_src": "app_layout_tsx",
+      "_tgt": "layout_rootlayout",
+      "source": "app_layout_tsx",
+      "target": "layout_rootlayout",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app\\page.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_src": "app_page_tsx",
+      "_tgt": "page_home",
+      "source": "app_page_tsx",
+      "target": "page_home",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "app\\page.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_src": "page_home",
+      "_tgt": "performancecontext_useperformance",
+      "source": "page_home",
+      "target": "performancecontext_useperformance"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app\\components\\AuthModal.tsx",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_src": "app_components_authmodal_tsx",
+      "_tgt": "authmodal_handleauth",
+      "source": "app_components_authmodal_tsx",
+      "target": "authmodal_handleauth",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app\\lib\\adaptiveEngine.ts",
+      "source_location": "L24",
+      "weight": 1.0,
+      "_src": "app_lib_adaptiveengine_ts",
+      "_tgt": "adaptiveengine_adaptiveengine",
+      "source": "app_lib_adaptiveengine_ts",
+      "target": "adaptiveengine_adaptiveengine",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "app\\lib\\adaptiveEngine.ts",
+      "source_location": "L26",
+      "weight": 1.0,
+      "_src": "adaptiveengine_adaptiveengine",
+      "_tgt": "adaptiveengine_adaptiveengine_getinitialsettings",
+      "source": "adaptiveengine_adaptiveengine",
+      "target": "adaptiveengine_adaptiveengine_getinitialsettings",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "app\\lib\\adaptiveEngine.ts",
+      "source_location": "L31",
+      "weight": 1.0,
+      "_src": "adaptiveengine_adaptiveengine",
+      "_tgt": "adaptiveengine_adaptiveengine_evaluatereflexperformance",
+      "source": "adaptiveengine_adaptiveengine",
+      "target": "adaptiveengine_adaptiveengine_evaluatereflexperformance",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "app\\lib\\adaptiveEngine.ts",
+      "source_location": "L62",
+      "weight": 1.0,
+      "_src": "adaptiveengine_adaptiveengine",
+      "_tgt": "adaptiveengine_adaptiveengine_evaluatememoryperformance",
+      "source": "adaptiveengine_adaptiveengine",
+      "target": "adaptiveengine_adaptiveengine_evaluatememoryperformance",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "app\\training\\components\\FocusMode.tsx",
+      "source_location": "L29",
+      "weight": 1.0,
+      "_src": "focusmode_focusmode",
+      "_tgt": "adaptiveengine_adaptiveengine_getinitialsettings",
+      "source": "adaptiveengine_adaptiveengine_getinitialsettings",
+      "target": "focusmode_focusmode"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "app\\training\\components\\ReflexMode.tsx",
+      "source_location": "L17",
+      "weight": 1.0,
+      "_src": "reflexmode_reflexmode",
+      "_tgt": "adaptiveengine_adaptiveengine_getinitialsettings",
+      "source": "adaptiveengine_adaptiveengine_getinitialsettings",
+      "target": "reflexmode_reflexmode"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "app\\training\\components\\MemoryMode.tsx",
+      "source_location": "L105",
+      "weight": 1.0,
+      "_src": "memorymode_handleroundend",
+      "_tgt": "adaptiveengine_adaptiveengine_evaluatememoryperformance",
+      "source": "adaptiveengine_adaptiveengine_evaluatememoryperformance",
+      "target": "memorymode_handleroundend"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app\\lib\\AuthContext.tsx",
+      "source_location": "L15",
+      "weight": 1.0,
+      "_src": "app_lib_authcontext_tsx",
+      "_tgt": "authcontext_authprovider",
+      "source": "app_lib_authcontext_tsx",
+      "target": "authcontext_authprovider",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app\\lib\\PerformanceContext.tsx",
+      "source_location": "L50",
+      "weight": 1.0,
+      "_src": "app_lib_performancecontext_tsx",
+      "_tgt": "performancecontext_performanceprovider",
+      "source": "app_lib_performancecontext_tsx",
+      "target": "performancecontext_performanceprovider",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app\\lib\\PerformanceContext.tsx",
+      "source_location": "L264",
+      "weight": 1.0,
+      "_src": "app_lib_performancecontext_tsx",
+      "_tgt": "performancecontext_useperformance",
+      "source": "app_lib_performancecontext_tsx",
+      "target": "performancecontext_useperformance",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "app\\training\\components\\FocusMode.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_src": "focusmode_focusmode",
+      "_tgt": "performancecontext_useperformance",
+      "source": "performancecontext_useperformance",
+      "target": "focusmode_focusmode"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "app\\training\\components\\ReflexMode.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_src": "reflexmode_reflexmode",
+      "_tgt": "performancecontext_useperformance",
+      "source": "performancecontext_useperformance",
+      "target": "reflexmode_reflexmode"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app\\training\\components\\FocusMode.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_src": "app_training_components_focusmode_tsx",
+      "_tgt": "focusmode_focusmode",
+      "source": "app_training_components_focusmode_tsx",
+      "target": "focusmode_focusmode",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app\\training\\components\\MemoryMode.tsx",
+      "source_location": "L43",
+      "weight": 1.0,
+      "_src": "app_training_components_memorymode_tsx",
+      "_tgt": "memorymode_startnextround",
+      "source": "app_training_components_memorymode_tsx",
+      "target": "memorymode_startnextround",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app\\training\\components\\MemoryMode.tsx",
+      "source_location": "L56",
+      "weight": 1.0,
+      "_src": "app_training_components_memorymode_tsx",
+      "_tgt": "memorymode_playsequence",
+      "source": "app_training_components_memorymode_tsx",
+      "target": "memorymode_playsequence",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app\\training\\components\\MemoryMode.tsx",
+      "source_location": "L73",
+      "weight": 1.0,
+      "_src": "app_training_components_memorymode_tsx",
+      "_tgt": "memorymode_handletileclick",
+      "source": "app_training_components_memorymode_tsx",
+      "target": "memorymode_handletileclick",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app\\training\\components\\MemoryMode.tsx",
+      "source_location": "L94",
+      "weight": 1.0,
+      "_src": "app_training_components_memorymode_tsx",
+      "_tgt": "memorymode_handleroundend",
+      "source": "app_training_components_memorymode_tsx",
+      "target": "memorymode_handleroundend",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app\\training\\components\\MemoryMode.tsx",
+      "source_location": "L125",
+      "weight": 1.0,
+      "_src": "app_training_components_memorymode_tsx",
+      "_tgt": "memorymode_startgame",
+      "source": "app_training_components_memorymode_tsx",
+      "target": "memorymode_startgame",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app\\training\\components\\MemoryMode.tsx",
+      "source_location": "L135",
+      "weight": 1.0,
+      "_src": "app_training_components_memorymode_tsx",
+      "_tgt": "memorymode_endgame",
+      "source": "app_training_components_memorymode_tsx",
+      "target": "memorymode_endgame",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "app\\training\\components\\MemoryMode.tsx",
+      "source_location": "L53",
+      "weight": 1.0,
+      "_src": "memorymode_startnextround",
+      "_tgt": "memorymode_playsequence",
+      "source": "memorymode_startnextround",
+      "target": "memorymode_playsequence",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "app\\training\\components\\MemoryMode.tsx",
+      "source_location": "L132",
+      "weight": 1.0,
+      "_src": "memorymode_startgame",
+      "_tgt": "memorymode_startnextround",
+      "source": "memorymode_startnextround",
+      "target": "memorymode_startgame",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "app\\training\\components\\MemoryMode.tsx",
+      "source_location": "L87",
+      "weight": 1.0,
+      "_src": "memorymode_handletileclick",
+      "_tgt": "memorymode_handleroundend",
+      "source": "memorymode_handletileclick",
+      "target": "memorymode_handleroundend",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app\\training\\components\\ReflexMode.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_src": "app_training_components_reflexmode_tsx",
+      "_tgt": "reflexmode_reflexmode",
+      "source": "app_training_components_reflexmode_tsx",
+      "target": "reflexmode_reflexmode",
+      "confidence_score": 1.0
+    }
+  ],
+  "hyperedges": []
+}
