@@ -191,22 +191,21 @@ export default function ReflexMode() {
                 </div>
             </div>
 
-            <div className="relative flex flex-col items-center justify-center grow min-h-[400px] md:min-h-[500px] bg-white dark:bg-slate-900 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800 p-8 overflow-hidden shadow-inner cursor-crosshair">
+            <div className="relative flex flex-row items-stretch grow min-h-[400px] md:min-h-[500px] bg-white dark:bg-slate-900 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800 p-6 md:p-8 overflow-hidden shadow-inner cursor-crosshair">
 
-                {/* Adaptive Indicators: Difficulty Bar */}
-                <div className="absolute top-6 left-1/2 -translate-x-1/2 w-full max-w-md px-10 z-20 pointer-events-none">
-                    <div className="flex justify-between items-end mb-2">
-                        <span className="text-xs font-bold text-slate-500 uppercase tracking-tighter">Difficulty Level</span>
-                        <span className="text-xs font-bold text-primary">{systemLoadPct}%</span>
+                {/* Adaptive Indicators: Vertical Difficulty Bar */}
+                <div className="w-12 md:w-16 flex flex-col items-center justify-end shrink-0 z-20 pointer-events-none border-r border-slate-200 dark:border-slate-800 pr-4 md:pr-6 mr-4 md:mr-6">
+                    <span className="text-[10px] font-bold text-primary mb-2">{systemLoadPct}%</span>
+                    <div className="w-2 h-full min-h-[250px] bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden flex flex-col justify-end">
+                        <div className="w-full bg-primary transition-all duration-500 rounded-full" style={{ height: `${systemLoadPct}%` }}></div>
                     </div>
-                    <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                        <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${systemLoadPct}%` }}></div>
+                    <div className="mt-4 flex items-center justify-center">
+                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>Diff Level</span>
                     </div>
-                    <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 text-center italic">Difficulty adjusting based on performance...</p>
                 </div>
 
                 {/* Central Game Area */}
-                <div className="relative w-full h-full min-h-[300px]" onClick={() => {
+                <div className="relative flex-1 w-full h-full min-h-[300px]" onClick={() => {
                     if (isPlaying && !stimulusActive) {
                         handleMiss(); // penalize for clicking randomly when no stimulus
                     }
@@ -215,7 +214,14 @@ export default function ReflexMode() {
                         <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 z-10 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-xl">
                             <div className="text-center max-w-sm">
                                 <h3 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">Reflex Mode</h3>
-                                <p className="text-sm text-slate-500 dark:text-slate-400">Click the stimulus as fast as possible when it appears.</p>
+                                <div className="text-sm text-slate-500 dark:text-slate-400 flex flex-col items-center gap-3">
+                                    <span>When this glowing target appears, click it as quickly as humanly possible:</span>
+                                    <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/40 relative">
+                                        <div className="absolute inset-0 bg-primary/30 rounded-full blur-md animate-pulse"></div>
+                                        <span className="material-symbols-outlined text-white text-3xl relative z-10">ads_click</span>
+                                    </div>
+                                    <span className="font-bold border border-primary/20 bg-primary/10 rounded-lg p-2 text-primary px-4">Do not click randomly! Accuracy and Speed both matter.</span>
+                                </div>
                             </div>
                             <button
                                 onClick={(e) => { e.stopPropagation(); startGame(); }}
