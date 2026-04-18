@@ -3,9 +3,11 @@
 import { useState, useEffect, useRef } from "react";
 import { AdaptiveEngine, AdaptiveSettings } from "../../lib/adaptiveEngine";
 import { usePerformance } from "../../lib/PerformanceContext";
+import SurveyOverlay from "./SurveyOverlay";
 
 export default function MemoryMode() {
     const { addSession, progress } = usePerformance();
+    const [needsSurvey, setNeedsSurvey] = useState(false);
 
     // Game State
     const [isPlaying, setIsPlaying] = useState(false);
@@ -140,15 +142,23 @@ export default function MemoryMode() {
         const finalDuration = Math.floor((Date.now() - sessionStartTime) / 1000);
         setSessionDuration(finalDuration);
 
+        setNeedsSurvey(true);
+    };
+
+    const handleSurveyComplete = (surveyResults: { cognitiveLoad: string, satisfactionScore: number }) => {
+        setNeedsSurvey(false);
+
         const accuracy = perfectStreak > 0 ? 100 : Math.max(0, 100 - (failedRecalls * 20));
 
         addSession({
             mode: 'memory',
-            duration: finalDuration,
+            duration: sessionDuration,
             score,
             accuracy,
             highestLevelReached: highestLevel,
-            difficultySettings: settings
+            difficultySettings: settings,
+            cognitiveLoad: surveyResults.cognitiveLoad,
+            satisfactionScore: surveyResults.satisfactionScore,
         });
     };
 
@@ -218,6 +228,10 @@ export default function MemoryMode() {
                             >
                                 Start Session
                             </button>
+                        </div>
+                    ) : needsSurvey ? (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center z-30 bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm rounded-xl">
+                            <SurveyOverlay onComplete={handleSurveyComplete} />
                         </div>
                     ) : !isPlaying && gameState === 'finished' ? (
                         <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 z-20 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-xl">

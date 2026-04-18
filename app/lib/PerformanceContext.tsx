@@ -14,6 +14,8 @@ export interface GameSession {
     avgReactionTime?: number;
     rawReactionTimes?: number[];
     isEarlyDropOff?: boolean;
+    cognitiveLoad?: string;
+    satisfactionScore?: number;
     highestLevelReached: number;
     difficultySettings: any;
 }
@@ -222,6 +224,8 @@ export function PerformanceProvider({ children }: { children: ReactNode }) {
 
             let stability_variance = null;
             let attention_stability_score = null;
+            let learnability_score = null;
+            let adaptation_accuracy_score = null;
 
             if (sessionData.rawReactionTimes && sessionData.rawReactionTimes.length > 2) {
                 const mean = sessionData.avgReactionTime || 0;
@@ -236,9 +240,40 @@ export function PerformanceProvider({ children }: { children: ReactNode }) {
                 const half = Math.floor(rts.length / 2);
                 const firstMean = rts.slice(0, half).reduce((a,b)=>a+b,0) / half;
                 const secondMean = rts.slice(half).reduce((a,b)=>a+b,0) / (rts.length - half);
-                
-                // Ratio: > 1.0 means warming up (getting faster), < 1.0 means cognitive fatigue (slowing down)
                 attention_stability_score = Number((firstMean / secondMean).toFixed(2)); 
+
+                // Learnability Score (Slope of the first 5 interactions)
+                if (rts.length > 5) {
+                    const initialStruggle = rts[0] + rts[1];
+                    const adaptedClicks = rts[3] + rts[4];
+                    learnability_score = Number((initialStruggle / (adaptedClicks || 1)).toFixed(2));
+                }
+
+                // Adaptation Accuracy Score (Panic resistance in late-stage difficulty)
+                if (rts.length > 10 && sessionData.highestLevelReached > 1) {
+                    const lateStageIndex = Math.floor(rts.length * 0.8);
+                    const lateStageRTs = rts.slice(lateStageIndex);
+                    const panicClicks = lateStageRTs.filter(rt => rt > mean * 1.5).length;
+                    adaptation_accuracy_score = Number(Math.max(0, 100 - ((panicClicks / lateStageRTs.length) * 100)).toFixed(2));
+                } else if (sessionData.highestLevelReached === 1) {
+                    adaptation_accuracy_score = 100.0;
+                }
+            }
+
+            // Effectiveness Score (Accuracy Weighted by Difficulty Payload)
+            let effectiveness_score = null;
+            if (sessionData.accuracy !== undefined && sessionData.highestLevelReached) {
+                effectiveness_score = Number(((sessionData.accuracy / 100) * sessionData.highestLevelReached).toFixed(2));
+            }
+
+            // Learning Improvement Rate (Historical Context Analysis)
+            let learning_improvement_rate = null;
+            const pastModeSessions = sessions.filter(s => s.mode === sessionData.mode);
+            if (pastModeSessions.length > 0 && sessionData.accuracy !== undefined) {
+                const historicalAcc = pastModeSessions.reduce((a, b) => a + b.accuracy, 0) / pastModeSessions.length;
+                learning_improvement_rate = Number((sessionData.accuracy - historicalAcc).toFixed(2));
+            } else if (pastModeSessions.length === 0) {
+                learning_improvement_rate = 0.0; // Baseline
             }
 
             const drop_off_flag = sessionData.isEarlyDropOff || false;
@@ -258,7 +293,14 @@ export function PerformanceProvider({ children }: { children: ReactNode }) {
                 efficiency_score,
                 performance_stability_variance: stability_variance,
                 attention_stability_score,
-                drop_off_flag
+                drop_off_flag,
+                learning_improvement_rate,
+                effectiveness_score,
+                learnability_score,
+                adaptation_accuracy_score,
+                // Injected Category 4 Survey Results
+                cognitive_load_perceived: sessionData.cognitiveLoad || null,
+                user_satisfaction: sessionData.satisfactionScore || null
             };
             
             supabase.from('session_logs').insert(logPayload).then(({error}) => {

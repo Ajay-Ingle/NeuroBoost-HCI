@@ -3,9 +3,11 @@
 import { useState, useEffect, useRef } from "react";
 import { AdaptiveEngine, AdaptiveSettings } from "../../lib/adaptiveEngine";
 import { usePerformance } from "../../lib/PerformanceContext";
+import SurveyOverlay from "./SurveyOverlay";
 
 export default function FocusMode() {
     const { addSession, progress } = usePerformance();
+    const [needsSurvey, setNeedsSurvey] = useState(false);
 
     // Game State
     const [isPlaying, setIsPlaying] = useState(false);
@@ -142,6 +144,11 @@ export default function FocusMode() {
     const endGame = () => {
         setIsPlaying(false);
         setItems([]);
+        setNeedsSurvey(true);
+    };
+
+    const handleSurveyComplete = (surveyResults: { cognitiveLoad: string, satisfactionScore: number }) => {
+        setNeedsSurvey(false);
 
         const avgRt = reactionTimes.length > 0
             ? reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length
@@ -158,7 +165,9 @@ export default function FocusMode() {
             isEarlyDropOff: timeLeft > 0,
             accuracy: finalAccuracy,
             highestLevelReached: settings.level,
-            difficultySettings: settings
+            difficultySettings: settings,
+            cognitiveLoad: surveyResults.cognitiveLoad,
+            satisfactionScore: surveyResults.satisfactionScore,
         });
     };
 
@@ -228,6 +237,10 @@ export default function FocusMode() {
                             >
                                 Start Session
                             </button>
+                        </div>
+                    ) : needsSurvey ? (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center z-30 bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm rounded-xl">
+                            <SurveyOverlay onComplete={handleSurveyComplete} />
                         </div>
                     ) : !isPlaying && timeLeft === 0 ? (
                         <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 z-10 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-xl">
