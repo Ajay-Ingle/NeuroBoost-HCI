@@ -154,6 +154,8 @@ export default function FocusMode() {
             duration: 60 - timeLeft,
             score,
             avgReactionTime: avgRt,
+            rawReactionTimes: reactionTimes,
+            isEarlyDropOff: timeLeft > 0,
             accuracy: finalAccuracy,
             highestLevelReached: settings.level,
             difficultySettings: settings

@@ -12,6 +12,8 @@ export interface GameSession {
     score: number; // local rendering proxy
     accuracy: number; // 0-100
     avgReactionTime?: number;
+    rawReactionTimes?: number[];
+    isEarlyDropOff?: boolean;
     highestLevelReached: number;
     difficultySettings: any;
 }
@@ -208,6 +210,39 @@ export function PerformanceProvider({ children }: { children: ReactNode }) {
 
         // 2. Cloud Write Engine
         if (user) {
+            // === ADVANCED CLINICAL STATISTICAL ENGINE ===
+            const error_rate = sessionData.accuracy !== undefined ? Math.max(0, 100 - sessionData.accuracy) : null;
+            
+            let efficiency_score = null;
+            if (sessionData.accuracy !== undefined && sessionData.avgReactionTime && sessionData.avgReactionTime > 0) {
+                efficiency_score = Number(((sessionData.accuracy / sessionData.avgReactionTime) * 1000).toFixed(2));
+            } else if (sessionData.mode === 'memory' && sessionData.duration > 0) {
+                efficiency_score = Number(((sessionData.score / sessionData.duration)).toFixed(2));
+            }
+
+            let stability_variance = null;
+            let attention_stability_score = null;
+
+            if (sessionData.rawReactionTimes && sessionData.rawReactionTimes.length > 2) {
+                const mean = sessionData.avgReactionTime || 0;
+                const rts = sessionData.rawReactionTimes;
+                
+                // Standard Deviation of RTs (Consistency Metric)
+                const sqDiffs = rts.map(rt => Math.pow(rt - mean, 2));
+                const avgSqDiff = sqDiffs.reduce((a, b) => a + b, 0) / sqDiffs.length;
+                stability_variance = Number(Math.sqrt(avgSqDiff).toFixed(2));
+
+                // Attention Decay over Time (Fatigue Metric)
+                const half = Math.floor(rts.length / 2);
+                const firstMean = rts.slice(0, half).reduce((a,b)=>a+b,0) / half;
+                const secondMean = rts.slice(half).reduce((a,b)=>a+b,0) / (rts.length - half);
+                
+                // Ratio: > 1.0 means warming up (getting faster), < 1.0 means cognitive fatigue (slowing down)
+                attention_stability_score = Number((firstMean / secondMean).toFixed(2)); 
+            }
+
+            const drop_off_flag = sessionData.isEarlyDropOff || false;
+
             // Push active log utilizing standard mapped integer types to avoid #22P02 Postgres errors
             const logPayload = {
                 user_id: user.id,
@@ -217,7 +252,13 @@ export function PerformanceProvider({ children }: { children: ReactNode }) {
                 accuracy_rate: sessionData.accuracy !== undefined ? Number(sessionData.accuracy.toFixed(2)) : null,
                 completion_time_seconds: sessionData.duration ? Math.round(sessionData.duration) : null,
                 memory_span_level: sessionData.mode === 'memory' ? sessionData.highestLevelReached : null,
-                difficulty_progression_level: sessionData.highestLevelReached
+                difficulty_progression_level: sessionData.highestLevelReached,
+                // Injected Category 3 Math Stats
+                error_rate: error_rate ? Number(error_rate.toFixed(2)) : null,
+                efficiency_score,
+                performance_stability_variance: stability_variance,
+                attention_stability_score,
+                drop_off_flag
             };
             
             supabase.from('session_logs').insert(logPayload).then(({error}) => {
