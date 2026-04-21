@@ -284,16 +284,21 @@ export function PerformanceProvider({ children }: { children: ReactNode }) {
                 return num;
             };
 
+            const cleanInt = (val: any) => {
+                const num = clean(val);
+                return num !== null ? Math.round(num) : null;
+            };
+
             // Push active log utilizing standard mapped integer types to avoid #22P02 Postgres errors
             const logPayload = {
                 user_id: user.id,
                 mode: sessionData.mode,
                 session_date: new Date(newSession.timestamp).toISOString(),
-                reaction_time_ms_avg: clean(sessionData.avgReactionTime),
+                reaction_time_ms_avg: cleanInt(sessionData.avgReactionTime),
                 accuracy_rate: clean(sessionData.accuracy),
-                completion_time_seconds: clean(sessionData.duration),
-                memory_span_level: sessionData.mode === 'memory' ? clean(sessionData.highestLevelReached) : null,
-                difficulty_progression_level: clean(sessionData.highestLevelReached),
+                completion_time_seconds: cleanInt(sessionData.duration),
+                memory_span_level: sessionData.mode === 'memory' ? cleanInt(sessionData.highestLevelReached) : null,
+                difficulty_progression_level: cleanInt(sessionData.highestLevelReached),
                 // Injected Category 3 Math Stats
                 error_rate: clean(error_rate),
                 efficiency_score: clean(efficiency_score),
@@ -305,8 +310,8 @@ export function PerformanceProvider({ children }: { children: ReactNode }) {
                 learnability_score: clean(learnability_score),
                 adaptation_accuracy_score: clean(adaptation_accuracy_score),
                 // Injected Category 4 Survey Results
-                cognitive_load_perceived: sessionData.cognitiveLoad || null,
-                user_satisfaction: sessionData.satisfactionScore ? clean(sessionData.satisfactionScore) : null
+                cognitive_load_perceived: cleanInt(sessionData.cognitiveLoad),
+                user_satisfaction: cleanInt(sessionData.satisfactionScore)
             };
             
             supabase.from('session_logs').insert(logPayload).then(({error}) => {
