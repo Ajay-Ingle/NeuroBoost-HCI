@@ -1,10 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePerformance } from "./lib/PerformanceContext";
+import { useAuth } from "./lib/AuthContext";
 
 export default function Home() {
     const { progress } = usePerformance();
+    const { user } = useAuth();
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     return (
         <div className="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
@@ -17,7 +21,7 @@ export default function Home() {
                         </div>
                         <h2 className="text-slate-900 dark:text-white text-xl font-bold leading-tight tracking-tight">NeuroBoost</h2>
                     </Link>
-                    <div className="flex flex-1 justify-end gap-4 lg:gap-8 items-center">
+                    <div className="flex flex-1 justify-end gap-3 lg:gap-8 items-center">
                         <nav className="hidden md:flex gap-6">
                             <Link className="text-primary font-semibold flex items-center gap-2 border-b-2 border-primary pb-1" href="/">
                                 <span className="material-symbols-outlined text-lg">home</span> Home
@@ -30,18 +34,46 @@ export default function Home() {
                             </Link>
                         </nav>
                         <div className="flex gap-2">
-                            <button className="flex size-10 cursor-pointer items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 transition-colors">
-                                <span className="material-symbols-outlined">notifications</span>
+                            {/* Mobile Hamburger Toggle */}
+                            <button 
+                                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                                className="md:hidden flex size-10 cursor-pointer items-center justify-center rounded-xl bg-primary text-white hover:opacity-90 transition-opacity shadow-sm"
+                            >
+                                <span className="material-symbols-outlined">{mobileMenuOpen ? 'close' : 'menu'}</span>
                             </button>
-                            <Link href="/profile" className="flex size-10 cursor-pointer items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 transition-colors" title="Edit Research Profile">
-                                <span className="material-symbols-outlined">settings</span>
-                            </Link>
                         </div>
-                        <div className="bg-primary/20 rounded-full size-10 overflow-hidden border-2 border-primary/30">
-                            <img className="w-full h-full object-cover" alt="User profile avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhMtEK935G_qp4xFh5DJGy_FAagcbtzixZXsOC5KgBq7zS8J2_D7NZhjULWcIw3oOeM7PlULsNOkW-i9NFh39nTURDB0XXALLrh3ck7rLWi8IJS8wXmFW8_J1DyUHPCCgKgS1nPps6IoOvxkw9cJAAsGEFI1ImhTbmRiZUrD_gDJfF29UJxoQkzJ1uTdadrieTZNzHbJ_OUqpyHDv8WEK7J5KTpaP4ETM9r0VM9LDTkgOsHqD4pp9UvQrCXjXBoSmrTMOFGencIA" />
-                        </div>
+                        
+                        {/* Dynamic User Avatar (Clickable to Profile) */}
+                        <Link href="/profile" className="bg-primary/10 dark:bg-primary/20 rounded-full size-10 flex items-center justify-center border-2 border-primary/30 hidden sm:flex flex-shrink-0 cursor-pointer hover:border-primary transition-colors" title="Edit Research Profile">
+                            {user && user.email ? (
+                                <span className="text-primary font-bold text-lg uppercase">
+                                    {user.email.charAt(0)}
+                                </span>
+                            ) : (
+                                <span className="material-symbols-outlined text-primary">person</span>
+                            )}
+                        </Link>
                     </div>
                 </header>
+
+                {/* Mobile Dropdown Menu */}
+                {mobileMenuOpen && (
+                    <div className="md:hidden absolute top-[65px] left-0 w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 z-40 py-4 px-6 flex flex-col gap-4 shadow-xl animate-in slide-in-from-top-4 fade-in duration-200">
+                        <Link className="text-primary font-bold flex items-center gap-3 p-3 bg-primary/5 rounded-xl border border-primary/20" href="/" onClick={() => setMobileMenuOpen(false)}>
+                            <span className="material-symbols-outlined">home</span> Dashboard / Home
+                        </Link>
+                        <Link className="text-slate-600 dark:text-slate-300 font-bold flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors" href="/training" onClick={() => setMobileMenuOpen(false)}>
+                            <span className="material-symbols-outlined">exercise</span> Training Modules
+                        </Link>
+                        <Link className="text-slate-600 dark:text-slate-300 font-bold flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors" href="/analytics" onClick={() => setMobileMenuOpen(false)}>
+                            <span className="material-symbols-outlined">leaderboard</span> Data & Analytics
+                        </Link>
+                        <div className="h-px w-full bg-slate-200 dark:bg-slate-800 my-2"></div>
+                        <Link className="text-slate-500 flex items-center gap-3 px-3 py-2 text-sm" href="/profile" onClick={() => setMobileMenuOpen(false)}>
+                            <span className="material-symbols-outlined text-[18px]">settings</span> Edit Clinical Profile
+                        </Link>
+                    </div>
+                )}
 
                 <main className="flex-1 max-w-[1200px] mx-auto w-full px-4 lg:px-10 py-8 space-y-8">
                     {/* User Profile & Streak Section */}

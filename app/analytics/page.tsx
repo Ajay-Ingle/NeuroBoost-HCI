@@ -7,12 +7,13 @@ import {
     LinearScale,
     PointElement,
     LineElement,
+    BarElement,
     Title,
     Tooltip,
     Legend,
     Filler
 } from 'chart.js';
-import { Line } from 'react-chartjs-2';
+import { Line, Bar } from 'react-chartjs-2';
 import { usePerformance } from "../lib/PerformanceContext";
 import { useAuth } from "../lib/AuthContext";
 import { supabase } from "../lib/supabaseClient";
@@ -24,6 +25,7 @@ ChartJS.register(
     LinearScale,
     PointElement,
     LineElement,
+    BarElement,
     Title,
     Tooltip,
     Legend,
@@ -31,42 +33,43 @@ ChartJS.register(
 );
 
 export default function Analytics() {
-    const { progress, sessions } = usePerformance();
+    const { progress, sessions: localSessions } = usePerformance();
     const { user } = useAuth();
-    const [cloudStats, setCloudStats] = useState<any>(null);
+    const [cloudLogs, setCloudLogs] = useState<any[]>([]);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     useEffect(() => {
         if (user) {
-            // Harness pure Postgres backend processing to generate daily statistical trends instantly
-            supabase.rpc('get_user_analytics', { target_user_id: user.id, days_back: 30 })
+            // Fetch raw telemetry logs directly to utilize the newly built AI clinical math variables
+            supabase.from('session_logs')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('session_date', { ascending: true })
+                .limit(50)
                 .then(({ data, error }) => {
-                    if (data) setCloudStats(data);
-                    if (error) console.error("Postgres RPC Analytics Error:", error);
+                    if (data) setCloudLogs(data);
+                    if (error) console.error("Postgres Logs Error:", error);
                 });
         }
     }, [user]);
 
-    // Prepare chart data (Fallback to local Context if anonymous, override with Cloud RPC daily aggregates if authenticated)
-    const reflexSessions = sessions.filter(s => s.mode === 'reflex');
+    // Data Source mapping (Prefer Cloud DB if logged in, fallback to local standard sessions if guest)
+    const activeData = user && cloudLogs.length > 0 ? cloudLogs : [...localSessions].reverse();
+    const isCloudMode = user && cloudLogs.length > 0;
 
-    const chartLabels = cloudStats?.daily_trends?.length > 0 
-        ? cloudStats.daily_trends.map((d: any) => new Date(d.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }))
-        : reflexSessions.map((s, i) => `Session ${i + 1}`);
+    // --- CHART 1: Cognitive Performance Effectiveness (Line) ---
+    const chartLabels = activeData.map((_, i) => `Sess ${i + 1}`);
 
-    const rtData = cloudStats?.daily_trends?.length > 0
-        ? cloudStats.daily_trends.map((d: any) => d.avg_rt || 0)
-        : reflexSessions.map(s => s.avgReactionTime || 0);
+    const effectivenessData = activeData.map(s => isCloudMode ? (s.effectiveness_score || 0) : ((s.accuracy || 0) * (s.highestLevelReached || 1) / 100));
+    const learnabilityData = activeData.map(s => isCloudMode ? (s.learnability_score || 0) : 0);
+    const adaptationData = activeData.map(s => isCloudMode ? (s.adaptation_accuracy_score || 0) : 0);
 
-    const accuracyData = cloudStats?.daily_trends?.length > 0
-        ? cloudStats.daily_trends.map((d: any) => d.avg_acc || 0)
-        : reflexSessions.map(s => s.accuracy);
-
-    const chartData = {
+    const cognitiveChartData = {
         labels: chartLabels.length > 0 ? chartLabels : ['No Data'],
         datasets: [
             {
-                label: 'Accuracy (%)',
-                data: accuracyData.length > 0 ? accuracyData : [0],
+                label: 'Effectiveness Score',
+                data: effectivenessData.length > 0 ? effectivenessData : [0],
                 borderColor: '#10b981', // emerald-500
                 backgroundColor: 'rgba(16, 185, 129, 0.1)',
                 tension: 0.4,
@@ -74,76 +77,66 @@ export default function Analytics() {
                 yAxisID: 'y',
             },
             {
-                label: 'Reaction Time (ms)',
-                data: rtData.length > 0 ? rtData : [0],
-                borderColor: '#2e9cdc', // primary blue
-                backgroundColor: 'rgba(46, 156, 220, 0.1)',
+                label: 'Adaptation Accuracy (Panic Resistance)',
+                data: adaptationData.length > 0 ? adaptationData : [0],
+                borderColor: '#8b5cf6', // violet-500
+                backgroundColor: 'transparent',
+                borderDash: [5, 5],
                 tension: 0.4,
                 fill: false,
-                borderDash: [5, 5],
-                yAxisID: 'y1',
+                yAxisID: 'y',
             }
         ],
     };
 
-    const chartOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: {
-            mode: 'index' as const,
-            intersect: false,
-        },
-        plugins: {
-            legend: {
-                position: 'top' as const,
+    // --- CHART 2: Attention Fatigue vs Stability (Bar) ---
+    const fatigueData = activeData.map(s => isCloudMode ? (s.attention_stability_score || 0) : 0);
+    const expectedVarianceData = activeData.map(s => isCloudMode ? (s.performance_stability_variance || 0) : 0);
+
+    const stabilityChartData = {
+        labels: chartLabels.length > 0 ? chartLabels : ['No Data'],
+        datasets: [
+            {
+                label: 'Attention Decay (Fatigue)',
+                data: fatigueData.length > 0 ? fatigueData : [0],
+                backgroundColor: '#f59e0b', // amber
             },
-            tooltip: {
-                backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                titleColor: '#fff',
-                bodyColor: '#cbd5e1',
-                padding: 10,
-                cornerRadius: 8,
+            {
+                label: 'Deviation (Variance)',
+                data: expectedVarianceData.length > 0 ? expectedVarianceData : [0],
+                backgroundColor: '#ef4444', // red
             }
-        },
-        scales: {
-            y: {
-                type: 'linear' as const,
-                display: true,
-                position: 'left' as const,
-                title: { display: true, text: 'Accuracy %' },
-                min: 0,
-                max: 100,
-            },
-            y1: {
-                type: 'linear' as const,
-                display: true,
-                position: 'right' as const,
-                title: { display: true, text: 'Reaction Time (ms)' },
-                grid: { drawOnChartArea: false }, // Only draw grid for primary y-axis
-                reverse: true, // Lower is better for RT
-            },
-        },
+        ],
     };
 
-    // Calculate some aggregate stats
-    const latestRt = cloudStats ? cloudStats.avg_reflex_rt_ms : (reflexSessions.length > 0 ? reflexSessions[reflexSessions.length - 1].avgReactionTime : 0);
-    const previousRt = reflexSessions.length > 1 ? reflexSessions[reflexSessions.length - 2].avgReactionTime : latestRt;
-    const rtTrend = latestRt && previousRt ? (((latestRt - previousRt) / previousRt) * 100).toFixed(1) : '0';
-    const isRtImprovement = parseFloat(rtTrend) < 0; // Negative means faster RT!
-    const globalAverageDisplay = cloudStats ? cloudStats.avg_reflex_rt_ms : progress.avgReactionTime;
+    const lineOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'top' as const },
+            tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)' }
+        },
+        scales: {
+            y: { min: 0 }
+        }
+    };
+
+    // Calculate aggregated overview states
+    const recentSess = isCloudMode ? cloudLogs[cloudLogs.length - 1] : null;
+    const isImproving = recentSess?.learning_improvement_rate > 0;
 
     return (
         <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
             <div className="layout-container flex h-full grow flex-col">
                 {/* Top Navigation Bar */}
-                <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark px-6 md:px-10 py-3 sticky top-0 z-50">
-                    <Link href="/" className="flex items-center gap-4 hover:opacity-80 transition-opacity cursor-pointer">
-                        <div className="text-primary size-8 flex items-center justify-center bg-primary/10 rounded-lg">
-                            <span className="material-symbols-outlined text-2xl font-bold">psychology</span>
+                <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 lg:px-10 py-3 sticky top-0 z-50">
+                    <Link href="/" className="flex items-center gap-4 text-primary hover:opacity-80 transition-opacity cursor-pointer">
+                        <div className="size-8 flex items-center justify-center bg-primary/10 rounded-lg">
+                            <span className="material-symbols-outlined text-primary font-bold">psychology</span>
                         </div>
-                        <h2 className="text-slate-900 dark:text-slate-100 text-xl font-bold leading-tight tracking-tight">NeuroBoost</h2>
+                        <h2 className="text-slate-900 dark:text-white text-xl font-bold leading-tight tracking-tight">NeuroBoost</h2>
                     </Link>
-                    <div className="flex flex-1 justify-end gap-4 md:gap-8 items-center">
+                    <div className="flex flex-1 justify-end gap-3 lg:gap-8 items-center">
                         <nav className="hidden md:flex gap-6">
                             <Link className="text-slate-500 dark:text-slate-400 hover:text-primary font-medium flex items-center gap-2 transition-colors" href="/">
                                 <span className="material-symbols-outlined text-lg">home</span> Home
@@ -155,17 +148,47 @@ export default function Analytics() {
                                 <span className="material-symbols-outlined text-lg">leaderboard</span> Stats
                             </Link>
                         </nav>
-                        <div className="flex items-center gap-3">
-                            <div className="hidden sm:block text-right">
-                                <p className="text-xs font-bold text-slate-900 dark:text-slate-100">{user?.email?.split('@')[0] || 'Guest User'}</p>
-                                <p className="text-[10px] text-primary font-medium">Premium Member</p>
-                            </div>
-                            <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden border-2 border-primary/30">
-                                <img className="h-full w-full object-cover" alt="User profile avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhMtEK935G_qp4xFh5DJGy_FAagcbtzixZXsOC5KgBq7zS8J2_D7NZhjULWcIw3oOeM7PlULsNOkW-i9NFh39nTURDB0XXALLrh3ck7rLWi8IJS8wXmFW8_J1DyUHPCCgKgS1nPps6IoOvxkw9cJAAsGEFI1ImhTbmRiZUrD_gDJfF29UJxoQkzJ1uTdadrieTZNzHbJ_OUqpyHDv8WEK7J5KTpaP4ETM9r0VM9LDTkgOsHqD4pp9UvQrCXjXBoSmrTMOFGencIA" />
-                            </div>
+                        <div className="flex gap-2">
+                            {/* Mobile Hamburger Toggle */}
+                            <button 
+                                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                                className="md:hidden flex size-10 cursor-pointer items-center justify-center rounded-xl bg-primary text-white hover:opacity-90 transition-opacity shadow-sm"
+                            >
+                                <span className="material-symbols-outlined">{mobileMenuOpen ? 'close' : 'menu'}</span>
+                            </button>
                         </div>
+                        
+                        {/* Dynamic User Avatar (Clickable to Profile) */}
+                        <Link href="/profile" className="bg-primary/10 dark:bg-primary/20 rounded-full size-10 flex items-center justify-center border-2 border-primary/30 hidden sm:flex flex-shrink-0 cursor-pointer hover:border-primary transition-colors" title="Edit Research Profile">
+                            {user && user.email ? (
+                                <span className="text-primary font-bold text-lg uppercase">
+                                    {user.email.charAt(0)}
+                                </span>
+                            ) : (
+                                <span className="material-symbols-outlined text-primary">person</span>
+                            )}
+                        </Link>
                     </div>
                 </header>
+
+                {/* Mobile Dropdown Menu */}
+                {mobileMenuOpen && (
+                    <div className="md:hidden absolute top-[62px] left-0 w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 z-40 py-4 px-6 flex flex-col gap-4 shadow-xl animate-in slide-in-from-top-4 fade-in duration-200">
+                        <Link className="text-slate-600 dark:text-slate-300 font-bold flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors" href="/" onClick={() => setMobileMenuOpen(false)}>
+                            <span className="material-symbols-outlined">home</span> Dashboard / Home
+                        </Link>
+                        <Link className="text-slate-600 dark:text-slate-300 font-bold flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors" href="/training" onClick={() => setMobileMenuOpen(false)}>
+                            <span className="material-symbols-outlined">exercise</span> Training Modules
+                        </Link>
+                        <Link className="text-primary font-bold flex items-center gap-3 p-3 bg-primary/5 rounded-xl border border-primary/20" href="/analytics" onClick={() => setMobileMenuOpen(false)}>
+                            <span className="material-symbols-outlined">leaderboard</span> Data & Analytics
+                        </Link>
+                        <div className="h-px w-full bg-slate-200 dark:bg-slate-800 my-2"></div>
+                        <Link className="text-slate-500 flex items-center gap-3 px-3 py-2 text-sm" href="/profile" onClick={() => setMobileMenuOpen(false)}>
+                            <span className="material-symbols-outlined text-[18px]">settings</span> Edit Clinical Profile
+                        </Link>
+                    </div>
+                )}
 
                 <main className="flex flex-1 flex-col lg:flex-row gap-6 p-6 lg:px-10 max-w-[1200px] mx-auto w-full">
                     {/* Sidebar / AI Insights Panel */}
@@ -200,23 +223,23 @@ export default function Analytics() {
                                 <div className="p-4 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-primary/10 relative overflow-hidden group">
                                     <div className="absolute top-0 left-0 w-1 h-full bg-primary opacity-50"></div>
                                     <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300 font-medium">
-                                        {reflexSessions.length > 5
-                                            ? `"Your Attention Focus is 14% higher during morning sessions compared to evening."`
-                                            : `"Complete 3 more sessions to unlock circadian rhythm performance patterns."`}
+                                        {activeData.length > 5
+                                            ? `"Your Effectiveness Score shows high neural plasticity during prolonged focus phases."`
+                                            : `"Complete 3 more sessions to unlock performance progression patterns."`}
                                     </p>
                                 </div>
-                                {isRtImprovement ? (
+                                {isImproving ? (
                                     <div className="p-4 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-emerald-500/20 relative overflow-hidden">
                                         <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500 opacity-50"></div>
                                         <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300 font-medium">
-                                            "Excellent! Your processing speed improved by <span className="text-emerald-500 font-bold">{Math.abs(parseFloat(rtTrend))}%</span>. This suggests high neural plasticity."
+                                            "Excellent! Your learning adaptation improved by <span className="text-emerald-500 font-bold">{recentSess?.learning_improvement_rate}%</span>. You are resisting cognitive fatigue well."
                                         </p>
                                     </div>
                                 ) : (
                                     <div className="p-4 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-amber-500/20 relative overflow-hidden">
                                         <div className="absolute top-0 left-0 w-1 h-full bg-amber-500 opacity-50"></div>
                                         <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300 font-medium">
-                                            "Take a 15-minute break. We noticed a slight decrease in focus over the last 10 minutes."
+                                            "Clinical Variance detected. Try focusing on consistency rather than speed to map stable progress parameters."
                                         </p>
                                     </div>
                                 )}
@@ -228,85 +251,88 @@ export default function Analytics() {
                     <div className="flex-1 flex flex-col gap-6">
                         {/* Top Summary Stats */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="bg-white dark:bg-background-dark p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all">
+                            <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all">
                                 <div className="flex justify-between items-start mb-4">
-                                    <p className="text-slate-500 dark:text-slate-400 text-sm font-bold uppercase tracking-wider">Reaction Time</p>
-                                    {reflexSessions.length > 1 && (
-                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${isRtImprovement ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30' : 'bg-red-100 text-red-600'}`}>
-                                            {rtTrend}% {isRtImprovement ? '↓' : '↑'}
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm font-bold uppercase tracking-wider">Clinical Effectiveness</p>
+                                    {recentSess && (
+                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${recentSess.effectiveness_score > 5 ? 'bg-emerald-100 text-emerald-600' : 'bg-primary/10 text-primary'}`}>
+                                            Peak Rating
                                         </span>
                                     )}
                                 </div>
                                 <div className="flex items-end justify-between">
                                     <h4 className="text-3xl font-bold text-slate-900 dark:text-slate-100 italic">
-                                        {latestRt ? Math.round(latestRt) : '--'}
-                                        <span className="text-sm font-normal text-slate-400 ml-1 not-italic">ms</span>
+                                        {recentSess?.effectiveness_score || '--'}
+                                        <span className="text-sm font-normal text-slate-400 ml-1 not-italic">index</span>
                                     </h4>
-                                    <div className="h-8 w-24 opacity-50">
-                                        <svg viewBox="0 0 100 20" className="h-full w-full stroke-primary fill-none stroke-2">
-                                            <path d="M0,15 L10,12 L20,18 L30,5 L40,15 L50,10 L60,12 L70,8 L80,15 L90,12 L100,10" />
-                                        </svg>
-                                    </div>
                                 </div>
                             </div>
 
-                            <div className="bg-white dark:bg-background-dark p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all">
+                            <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all">
                                 <div className="flex justify-between items-start mb-4">
-                                    <p className="text-slate-500 dark:text-slate-400 text-sm font-bold uppercase tracking-wider">Memory Span</p>
-                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30">+15% ↑</span>
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm font-bold uppercase tracking-wider">Learning Delta</p>
+                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${isImproving ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'}`}>
+                                        {isImproving ? '+ Improvement' : 'Plateau'}
+                                    </span>
                                 </div>
                                 <div className="flex items-end justify-between">
                                     <h4 className="text-3xl font-bold text-slate-900 dark:text-slate-100 italic">
-                                        {cloudStats?.avg_memory_sequence || progress.currentLevel + 2}
-                                        <span className="text-sm font-normal text-slate-400 ml-1 not-italic">units</span>
-                                    </h4>
-                                    <div className="h-8 w-24 opacity-50">
-                                        <svg viewBox="0 0 100 20" className="h-full w-full stroke-emerald-500 fill-none stroke-2">
-                                            <path d="M0,18 L10,15 L20,10 L30,12 L40,8 L50,15 L60,10 L70,5 L80,8 L90,6 L100,2" />
-                                        </svg>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="bg-white dark:bg-background-dark p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all">
-                                <div className="flex justify-between items-start mb-4">
-                                    <p className="text-slate-500 dark:text-slate-400 text-sm font-bold uppercase tracking-wider">Attention Focus</p>
-                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30">+5% ↑</span>
-                                </div>
-                                <div className="flex items-end justify-between">
-                                    <h4 className="text-3xl font-bold text-slate-900 dark:text-slate-100 italic">
-                                        {cloudStats?.avg_accuracy ? Math.round(cloudStats.avg_accuracy) : 92}
+                                        {recentSess?.learning_improvement_rate ? `+${recentSess.learning_improvement_rate}` : '--'}
                                         <span className="text-sm font-normal text-slate-400 ml-1 not-italic">%</span>
                                     </h4>
-                                    <div className="h-8 w-24 opacity-50">
-                                        <svg viewBox="0 0 100 20" className="h-full w-full stroke-amber-500 fill-none stroke-2">
-                                            <path d="M0,10 L10,12 L20,10 L30,8 L40,10 L50,12 L60,8 L70,10 L80,5 L90,6 L100,4" />
-                                        </svg>
-                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all">
+                                <div className="flex justify-between items-start mb-4">
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm font-bold uppercase tracking-wider">Adaptivity</p>
+                                </div>
+                                <div className="flex items-end justify-between">
+                                    <h4 className="text-3xl font-bold text-slate-900 dark:text-slate-100 italic">
+                                        {recentSess?.learnability_score || '--'}
+                                        <span className="text-sm font-normal text-slate-400 ml-1 not-italic">Hz</span>
+                                    </h4>
                                 </div>
                             </div>
                         </div>
 
+
+
                         {/* Main Chart Section */}
-                        <div className="bg-white dark:bg-background-dark rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                                 <div>
-                                    <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">Cognitive Performance Trends</h3>
-                                    <p className="text-slate-500 dark:text-slate-400 text-sm">Historical progress over mapped training sessions</p>
+                                    <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 uppercase font-mono tracking-tighter">I. Cognitive Effectiveness</h3>
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm">Effectiveness matrix overlaying adaptation resistance during high-pressure panic intervals.</p>
                                 </div>
-                                <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
-                                    <button className="px-3 py-1.5 text-xs font-bold bg-white dark:bg-slate-700 shadow-sm rounded-md text-slate-900 dark:text-slate-100">30 Days</button>
-                                    <button className="px-3 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">90 Days</button>
-                                    <button className="px-3 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">1 Year</button>
+                            </div>
+
+                            <div className="h-72 w-full relative mb-8">
+                                {activeData.length > 0 ? (
+                                    <Line data={cognitiveChartData} options={lineOptions} />
+                                ) : (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-dashed border-slate-300 dark:border-slate-700">
+                                        <p className="text-slate-400">Sync games to Cloud to populate clinical data.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Fatigue Chart Section */}
+                        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                                <div>
+                                    <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 uppercase font-mono tracking-tighter">II. Fatigue & Variance Analytics</h3>
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm">Quantifiable interaction decay representing cognitive exhaustion thresholds.</p>
                                 </div>
                             </div>
 
                             <div className="h-72 w-full relative">
-                                {reflexSessions.length > 0 ? (
-                                    <Line data={chartData} options={chartOptions} />
+                                {activeData.length > 0 ? (
+                                    <Bar data={stabilityChartData} options={lineOptions} />
                                 ) : (
                                     <div className="absolute inset-0 flex items-center justify-center bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-dashed border-slate-300 dark:border-slate-700">
-                                        <p className="text-slate-400">Complete a Reflex training session to view performance charts.</p>
+                                        <p className="text-slate-400">Sync games to Cloud to populate clinical data.</p>
                                     </div>
                                 )}
                             </div>

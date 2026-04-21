@@ -8,6 +8,7 @@ import FocusMode from "./components/FocusMode";
 import { useAuth } from "../lib/AuthContext";
 
 export default function Training() {
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'reflex' | 'memory' | 'focus'>('reflex');
     const { user, showAuthModal, signOut } = useAuth();
 
@@ -38,18 +39,42 @@ export default function Training() {
                     {user ? (
                         <div className="flex items-center gap-3">
                             <span className="text-xs font-bold text-emerald-500 hidden md:flex items-center gap-1 border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 rounded-full"><span className="material-symbols-outlined text-[14px]">cloud_done</span> Cloud Synced</span>
-                            <button onClick={signOut} className="flex items-center justify-center rounded-xl h-10 px-5 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-sm tracking-wide hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">
-                                Logout
-                            </button>
                         </div>
                     ) : (
-                        <button onClick={showAuthModal} className="flex items-center gap-2 justify-center rounded-xl h-10 px-5 bg-primary text-white font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all text-sm tracking-wide">
+                        <button onClick={showAuthModal} className="hidden md:flex items-center gap-2 justify-center rounded-xl h-10 px-5 bg-primary text-white font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all text-sm tracking-wide">
                             <span className="material-symbols-outlined text-lg">cloud_upload</span>
                             <span>Login to Sync</span>
                         </button>
                     )}
+                    
+                    {/* Mobile Hamburger Toggle */}
+                    <button 
+                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        className="md:hidden flex size-10 cursor-pointer items-center justify-center rounded-xl bg-primary text-white hover:opacity-90 transition-opacity shadow-sm ml-2"
+                    >
+                        <span className="material-symbols-outlined">{mobileMenuOpen ? 'close' : 'menu'}</span>
+                    </button>
                 </div>
             </header>
+
+            {/* Mobile Dropdown Menu */}
+            {mobileMenuOpen && (
+                <div className="md:hidden absolute top-[62px] left-0 w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 z-40 py-4 px-6 flex flex-col gap-4 shadow-xl animate-in slide-in-from-top-4 fade-in duration-200">
+                    <Link className="text-slate-600 dark:text-slate-300 font-bold flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors" href="/" onClick={() => setMobileMenuOpen(false)}>
+                        <span className="material-symbols-outlined">home</span> Dashboard / Home
+                    </Link>
+                    <Link className="text-primary font-bold flex items-center gap-3 p-3 bg-primary/5 rounded-xl border border-primary/20" href="/training" onClick={() => setMobileMenuOpen(false)}>
+                        <span className="material-symbols-outlined">exercise</span> Training Modules
+                    </Link>
+                    <Link className="text-slate-600 dark:text-slate-300 font-bold flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors" href="/analytics" onClick={() => setMobileMenuOpen(false)}>
+                        <span className="material-symbols-outlined">leaderboard</span> Data & Analytics
+                    </Link>
+                    <div className="h-px w-full bg-slate-200 dark:bg-slate-800 my-2"></div>
+                    <Link className="text-slate-500 flex items-center gap-3 px-3 py-2 text-sm" href="/profile" onClick={() => setMobileMenuOpen(false)}>
+                        <span className="material-symbols-outlined text-[18px]">settings</span> Edit Clinical Profile
+                    </Link>
+                </div>
+            )}
 
             <main className="flex flex-1 justify-center py-6 md:py-10 px-4 md:px-10">
                 <div className="layout-content-container flex flex-col max-w-[1024px] w-full flex-1 gap-6">

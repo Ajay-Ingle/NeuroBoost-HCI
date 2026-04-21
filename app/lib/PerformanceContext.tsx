@@ -278,33 +278,39 @@ export function PerformanceProvider({ children }: { children: ReactNode }) {
 
             const drop_off_flag = sessionData.isEarlyDropOff || false;
 
+            const clean = (val: any) => {
+                const num = Number(val);
+                if (val === null || val === undefined || Number.isNaN(num) || !Number.isFinite(num)) return null;
+                return num;
+            };
+
             // Push active log utilizing standard mapped integer types to avoid #22P02 Postgres errors
             const logPayload = {
                 user_id: user.id,
                 mode: sessionData.mode,
                 session_date: new Date(newSession.timestamp).toISOString(),
-                reaction_time_ms_avg: sessionData.avgReactionTime ? Math.round(sessionData.avgReactionTime) : null,
-                accuracy_rate: sessionData.accuracy !== undefined ? Number(sessionData.accuracy.toFixed(2)) : null,
-                completion_time_seconds: sessionData.duration ? Math.round(sessionData.duration) : null,
-                memory_span_level: sessionData.mode === 'memory' ? sessionData.highestLevelReached : null,
-                difficulty_progression_level: sessionData.highestLevelReached,
+                reaction_time_ms_avg: clean(sessionData.avgReactionTime),
+                accuracy_rate: clean(sessionData.accuracy),
+                completion_time_seconds: clean(sessionData.duration),
+                memory_span_level: sessionData.mode === 'memory' ? clean(sessionData.highestLevelReached) : null,
+                difficulty_progression_level: clean(sessionData.highestLevelReached),
                 // Injected Category 3 Math Stats
-                error_rate: error_rate ? Number(error_rate.toFixed(2)) : null,
-                efficiency_score,
-                performance_stability_variance: stability_variance,
-                attention_stability_score,
-                drop_off_flag,
-                learning_improvement_rate,
-                effectiveness_score,
-                learnability_score,
-                adaptation_accuracy_score,
+                error_rate: clean(error_rate),
+                efficiency_score: clean(efficiency_score),
+                performance_stability_variance: clean(stability_variance),
+                attention_stability_score: clean(attention_stability_score),
+                drop_off_flag: Boolean(drop_off_flag),
+                learning_improvement_rate: clean(learning_improvement_rate),
+                effectiveness_score: clean(effectiveness_score),
+                learnability_score: clean(learnability_score),
+                adaptation_accuracy_score: clean(adaptation_accuracy_score),
                 // Injected Category 4 Survey Results
                 cognitive_load_perceived: sessionData.cognitiveLoad || null,
-                user_satisfaction: sessionData.satisfactionScore || null
+                user_satisfaction: sessionData.satisfactionScore ? clean(sessionData.satisfactionScore) : null
             };
             
             supabase.from('session_logs').insert(logPayload).then(({error}) => {
-                if (error) console.error("Could not upload log to Cloud: ", error);
+                if (error) console.error("Could not upload log to Cloud: ", error.message || JSON.stringify(error));
             });
 
             // Persist the specific Adaptive Node Settings dynamically
