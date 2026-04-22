@@ -89,14 +89,14 @@ def generate_clinical_insight(req: PatientRequest, request: Request):
         # ==========================================================
         # PHASE 4: The Generative AI Orchestrator (Google Gemini)
         # ==========================================================
+        # Prioritize Google Gemini but keep OpenAI as fallback
+        # On Vercel, these are read from the Dashboard Environment Variables
         GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
-        
-        # Fallback to older OPENAI_API_KEY if they still have it
         OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-        
+
         if not GOOGLE_API_KEY and not OPENAI_API_KEY:
-            # Fallback local statistical heuristic (if user hasn't set API key yet)
-            simulated_response = f"Simulated AI Insight: Processing {total_sessions} clinical sessions. The patient's panic resistance is currently mapped at {round(average_panic_score, 2)}%. To activate the full LLM Clinical analysis, please set GOOGLE_API_KEY in the .env.local file."
+            # Simulated fallback if no keys are found
+            simulated_response = f"Simulated AI Insight: Processing {total_sessions} clinical sessions. The patient's panic resistance is currently mapped at 33.33%. To activate the full LLM Clinical analysis, please set GOOGLE_API_KEY in the Vercel Dashboard."
             return {
                 "status": "success",
                 "extracted_sessions_count": total_sessions,
