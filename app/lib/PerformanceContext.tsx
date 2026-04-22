@@ -281,7 +281,10 @@ export function PerformanceProvider({ children }: { children: ReactNode }) {
             const clean = (val: any) => {
                 const num = Number(val);
                 if (val === null || val === undefined || Number.isNaN(num) || !Number.isFinite(num)) return null;
-                return num;
+                // Strict bounds for Postgres NUMERIC columns to prevent overflow
+                if (num > 999.99) return 999.99;
+                if (num < -999.99) return -999.99;
+                return parseFloat(num.toFixed(2));
             };
 
             const cleanInt = (val: any) => {
@@ -289,7 +292,6 @@ export function PerformanceProvider({ children }: { children: ReactNode }) {
                 return num !== null ? Math.round(num) : null;
             };
 
-            // Push active log utilizing standard mapped integer types to avoid #22P02 Postgres errors
             const logPayload = {
                 user_id: user.id,
                 mode: sessionData.mode,
@@ -309,8 +311,8 @@ export function PerformanceProvider({ children }: { children: ReactNode }) {
                 effectiveness_score: clean(effectiveness_score),
                 learnability_score: clean(learnability_score),
                 adaptation_accuracy_score: clean(adaptation_accuracy_score),
-                // Injected Category 4 Survey Results
-                cognitive_load_perceived: cleanInt(sessionData.cognitiveLoad),
+                // Injected Category 4 Survey Results - Cast to string/number as per PG schema
+                cognitive_load_perceived: String(sessionData.cognitiveLoad || "0"),
                 user_satisfaction: cleanInt(sessionData.satisfactionScore)
             };
             

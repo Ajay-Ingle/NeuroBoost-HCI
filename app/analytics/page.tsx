@@ -37,6 +37,10 @@ export default function Analytics() {
     const { user } = useAuth();
     const [cloudLogs, setCloudLogs] = useState<any[]>([]);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    
+    // AI Integration States
+    const [aiReport, setAiReport] = useState<string | null>(null);
+    const [isAiLoading, setIsAiLoading] = useState(false);
 
     useEffect(() => {
         if (user) {
@@ -52,6 +56,36 @@ export default function Analytics() {
                 });
         }
     }, [user]);
+
+    const generateAiClinicalInsight = async () => {
+        if (!user) return;
+        setIsAiLoading(true);
+        try {
+            // Fetch session to obtain JWT for RLS bypass in the Python backend
+            const { data: { session } } = await supabase.auth.getSession();
+            
+            const res = await fetch('/api/diagnose', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session?.access_token}`
+                },
+                body: JSON.stringify({ user_id: user.id, limit: 5 })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                setAiReport(data.ai_report);
+            } else {
+                console.error("Backend diagnostic error:", data);
+                setAiReport("Unable to generate diagnostic. Backend Error.");
+            }
+        } catch (error) {
+            console.error(error);
+            setAiReport("Network error contacting AI Engine.");
+        } finally {
+            setIsAiLoading(false);
+        }
+    };
 
     // Data Source mapping (Prefer Cloud DB if logged in, fallback to local standard sessions if guest)
     const activeData = user && cloudLogs.length > 0 ? cloudLogs : [...localSessions].reverse();
@@ -214,35 +248,58 @@ export default function Analytics() {
                         </nav>
 
                         {/* AI Insights Panel */}
-                        <div className="bg-primary/5 dark:bg-primary/10 p-5 rounded-xl border border-primary/20 shadow-sm">
-                            <div className="flex items-center gap-2 mb-4">
-                                <span className="material-symbols-outlined text-primary text-xl">auto_awesome</span>
-                                <h3 className="text-primary font-bold text-sm uppercase tracking-wider">Cognitive Insights</h3>
-                            </div>
-                            <div className="space-y-4">
-                                <div className="p-4 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-primary/10 relative overflow-hidden group">
-                                    <div className="absolute top-0 left-0 w-1 h-full bg-primary opacity-50"></div>
-                                    <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300 font-medium">
-                                        {activeData.length > 5
-                                            ? `"Your Effectiveness Score shows high neural plasticity during prolonged focus phases."`
-                                            : `"Complete 3 more sessions to unlock performance progression patterns."`}
-                                    </p>
+                        <div className="bg-primary/5 dark:bg-primary/10 p-5 rounded-xl border border-primary/20 shadow-sm flex flex-col items-start gap-4">
+                            <div className="flex w-full items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-primary text-xl">psychology</span>
+                                    <h3 className="text-primary font-bold text-sm uppercase tracking-wider">Gen AI Insights</h3>
                                 </div>
-                                {isImproving ? (
-                                    <div className="p-4 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-emerald-500/20 relative overflow-hidden">
-                                        <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500 opacity-50"></div>
+                                <span className="bg-primary/20 text-primary text-[10px] font-bold px-2 py-1 rounded-full border border-primary/30">MCP Powered</span>
+                            </div>
+
+                            {/* Dynamic AI UI Area */}
+                            <div className="w-full space-y-4">
+                                {aiReport ? (
+                                    <div className="p-4 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-emerald-500/30 relative overflow-hidden">
+                                        <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500 opacity-60"></div>
                                         <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300 font-medium">
-                                            "Excellent! Your learning adaptation improved by <span className="text-emerald-500 font-bold">{recentSess?.learning_improvement_rate}%</span>. You are resisting cognitive fatigue well."
+                                            {aiReport}
                                         </p>
                                     </div>
                                 ) : (
-                                    <div className="p-4 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-amber-500/20 relative overflow-hidden">
-                                        <div className="absolute top-0 left-0 w-1 h-full bg-amber-500 opacity-50"></div>
-                                        <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300 font-medium">
-                                            "Clinical Variance detected. Try focusing on consistency rather than speed to map stable progress parameters."
+                                    <div className="p-4 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-primary/10 relative overflow-hidden group">
+                                        <div className="absolute top-0 left-0 w-1 h-full bg-primary opacity-50"></div>
+                                        <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400 font-medium italic">
+                                            "Our Gen AI Agent maps your latest mathematical clinical arrays (Panic Resistance & Variance) via Model Context Protocol to generate personalized behavioral therapy insights."
                                         </p>
                                     </div>
                                 )}
+                                
+                                <button 
+                                    onClick={generateAiClinicalInsight}
+                                    disabled={isAiLoading || !isCloudMode}
+                                    className={`w-full py-2.5 rounded-lg flex items-center justify-center gap-2 text-sm font-bold transition-all shadow-sm
+                                        ${isAiLoading 
+                                            ? 'bg-slate-200 text-slate-400 cursor-not-allowed' 
+                                            : !isCloudMode 
+                                                ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                                : 'bg-primary text-white hover:bg-primary/90 hover:shadow-primary/30 hover:shadow-md'
+                                        }
+                                    `}
+                                >
+                                    {isAiLoading ? (
+                                        <>
+                                            <span className="material-symbols-outlined animate-spin text-sm">cycle</span>
+                                            Reasoning...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span className="material-symbols-outlined text-sm">auto_awesome</span>
+                                            Generate Diagnostic
+                                        </>
+                                    )}
+                                </button>
+                                {!isCloudMode && <p className="text-[10px] text-center text-slate-400 w-full mt-1">Requires Supabase Cloud Connection</p>}
                             </div>
                         </div>
                     </aside>
