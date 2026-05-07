@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, SchemaType, FunctionDeclaration } from "@google/generative-ai";
 
 // Polyfill EventSource for Node.js
 import { EventSource } from "eventsource";
@@ -41,15 +41,15 @@ export async function POST(req: Request) {
         const { tools } = await mcpClient.listTools();
         
         // Convert MCP tool schemas to Gemini function declarations
-        const geminiTools = tools.map(t => ({
+        const geminiTools: FunctionDeclaration[] = tools.map(t => ({
             name: t.name,
-            description: t.description,
+            description: t.description || "",
             parameters: {
-                type: "OBJECT",
+                type: SchemaType.OBJECT,
                 properties: {
-                    user_id: { type: "STRING" },
-                    jwt_token: { type: "STRING" },
-                    limit: { type: "INTEGER" }
+                    user_id: { type: SchemaType.STRING },
+                    jwt_token: { type: SchemaType.STRING },
+                    limit: { type: SchemaType.INTEGER }
                 },
                 required: ["user_id"]
             }
