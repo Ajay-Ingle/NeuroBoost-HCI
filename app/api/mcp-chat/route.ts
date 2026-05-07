@@ -75,7 +75,7 @@ export async function POST(req: Request) {
                 arguments: {
                     user_id: target_user_id,
                     jwt_token: jwt_token,
-                    limit: call.args.limit || 5
+                    limit: (call.args as any).limit || 5
                 }
             });
 
