@@ -58,7 +58,7 @@ export async function POST(req: Request) {
         // Execute Gemini with tools
         const chat = model.startChat({
             tools: [{ functionDeclarations: geminiTools }],
-            systemInstruction: { parts: [{ text: systemInstruction }] },
+            systemInstruction: { role: "system", parts: [{ text: systemInstruction }] },
         });
 
         const result = await chat.sendMessage(query);
