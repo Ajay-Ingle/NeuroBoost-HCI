@@ -32,6 +32,9 @@ export default function Home() {
                             <Link className="text-slate-500 dark:text-slate-400 hover:text-primary font-medium flex items-center gap-2 transition-colors" href="/analytics">
                                 <span className="material-symbols-outlined text-lg">leaderboard</span> Stats
                             </Link>
+                            <Link className="text-emerald-500 hover:text-emerald-400 font-bold flex items-center gap-2 transition-colors bg-emerald-500/10 px-3 py-1.5 rounded-lg" href="/clinical-assistant">
+                                <span className="material-symbols-outlined text-lg">medical_services</span> Clinical AI
+                            </Link>
                         </nav>
                         <div className="flex gap-2">
                             {/* Mobile Hamburger Toggle */}
@@ -67,6 +70,9 @@ export default function Home() {
                         </Link>
                         <Link className="text-slate-600 dark:text-slate-300 font-bold flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors" href="/analytics" onClick={() => setMobileMenuOpen(false)}>
                             <span className="material-symbols-outlined">leaderboard</span> Data & Analytics
+                        </Link>
+                        <Link className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-3 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl transition-colors" href="/clinical-assistant" onClick={() => setMobileMenuOpen(false)}>
+                            <span className="material-symbols-outlined">medical_services</span> Clinical AI Assistant
                         </Link>
                         <div className="h-px w-full bg-slate-200 dark:bg-slate-800 my-2"></div>
                         <Link className="text-slate-500 flex items-center gap-3 px-3 py-2 text-sm" href="/profile" onClick={() => setMobileMenuOpen(false)}>

@@ -6,7 +6,7 @@ import { useAuth } from "../lib/AuthContext";
 import { supabase } from "../lib/supabaseClient";
 
 export default function ClinicalAssistant() {
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const [role, setRole] = useState<"patient" | "doctor" | null>(null);
     const [patients, setPatients] = useState<any[]>([]);
     const [selectedPatientId, setSelectedPatientId] = useState<string>("");
@@ -91,8 +91,32 @@ export default function ClinicalAssistant() {
         }
     };
 
-    if (!user || !role) {
-        return <div className="p-10 text-center text-white">Loading Security Context...</div>;
+    if (authLoading) {
+        return (
+            <div className="min-h-screen bg-slate-900 flex items-center justify-center p-10">
+                <div className="text-center text-white animate-pulse text-xl">Loading Security Context...</div>
+            </div>
+        );
+    }
+
+    if (!user) {
+        return (
+            <div className="min-h-screen bg-slate-900 flex items-center justify-center p-10">
+                <div className="bg-slate-800 p-8 rounded-2xl border border-slate-700 text-center max-w-md">
+                    <span className="material-symbols-outlined text-rose-500 text-5xl mb-4">lock</span>
+                    <h2 className="text-2xl font-bold text-white mb-2">Unauthorized Access</h2>
+                    <p className="text-slate-400">You must log into NeuroBoost to access the Clinical AI Assistant.</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!role) {
+        return (
+            <div className="min-h-screen bg-slate-900 flex items-center justify-center p-10">
+                <div className="text-center text-white animate-pulse text-xl">Verifying Medical Credentials...</div>
+            </div>
+        );
     }
 
     return (
