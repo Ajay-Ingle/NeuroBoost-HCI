@@ -1,14 +1,16 @@
 import { NextResponse } from 'next/server';
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
-import { GoogleGenerativeAI, SchemaType, FunctionDeclaration } from "@google/generative-ai";
+import Groq from "groq-sdk";
 
 // Polyfill EventSource for Node.js
 import { EventSource } from "eventsource";
 (global as any).EventSource = EventSource;
 
-// Initialize Gemini
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+// Initialize Groq
+const groq = new Groq({
+    apiKey: process.env.GROQ_API_KEY || "",
+});
 
 export async function POST(req: Request) {
     try {
@@ -17,6 +19,10 @@ export async function POST(req: Request) {
         if (!process.env.MCP_SERVER_URL) {
             return NextResponse.json({ error: "Missing MCP_SERVER_URL in environment" }, { status: 500 });
         }
+        
+        if (!process.env.GROQ_API_KEY) {
+            return NextResponse.json({ error: "Missing GROQ_API_KEY in environment" }, { status: 500 });
+        }
 
         // 1. Connect to the Render MCP Server via SSE
         const transport = new SSEClientTransport(new URL(process.env.MCP_SERVER_URL));
@@ -24,73 +30,105 @@ export async function POST(req: Request) {
         
         await mcpClient.connect(transport);
 
-        // 2. Setup Gemini Model
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
-        
-        // 3. System Prompt: Force AI to use the MCP tools for the specific user
+        // 2. System Prompt
         const systemInstruction = `You are a professional Medical/Clinical Data Assistant.
-        The user you are answering is inquiring about patient ID: ${target_user_id}.
-        You MUST use your provided tools to fetch the baseline, fatigue, and panic resistance for this patient to answer the query.
-        Pass the patient ID and the jwt_token exactly as provided to your tools so the database allows access.
-        The jwt_token to pass to your tools is: ${jwt_token}
-        `;
+The user is inquiring about patient ID: ${target_user_id}.
+When asked about patient metrics, use the provided functions to fetch the data.
+Use this jwt_token for authorization in your function calls: ${jwt_token}`;
 
-        // 4. In a full production app, we would map the MCP tools to Gemini function declarations here.
-        // For the sake of this phase, we will simulate the tool calling loop or just pass the tool schema.
-        // FastMCP tools can be fetched dynamically from the server:
+        // 3. Fetch MCP tools
         const { tools } = await mcpClient.listTools();
         
-        // Convert MCP tool schemas to Gemini function declarations
-        const geminiTools: FunctionDeclaration[] = tools.map(t => ({
-            name: t.name,
-            description: t.description || "",
-            parameters: {
-                type: SchemaType.OBJECT,
-                properties: {
-                    user_id: { type: SchemaType.STRING },
-                    jwt_token: { type: SchemaType.STRING },
-                    limit: { type: SchemaType.INTEGER }
-                },
-                required: ["user_id"]
+        // Convert MCP tool schemas to Groq/OpenAI function declarations
+        const groqTools = tools.map(t => ({
+            type: "function" as const,
+            function: {
+                name: t.name,
+                description: t.description || "",
+                parameters: {
+                    type: "object",
+                    properties: {
+                        user_id: { type: "string", description: "The target patient UUID" },
+                        jwt_token: { type: "string", description: "The JWT authorization token" },
+                        limit: { type: "integer", description: "Optional record limit" }
+                    },
+                    required: ["user_id", "jwt_token"]
+                }
             }
         }));
 
-        // Execute Gemini with tools
-        const chat = model.startChat({
-            tools: [{ functionDeclarations: geminiTools }],
-            systemInstruction: { role: "system", parts: [{ text: systemInstruction }] },
+        const messages: any[] = [
+            { role: "system", content: systemInstruction },
+            { role: "user", content: query }
+        ];
+
+        // 4. First completion pass with tools
+        const completion = await groq.chat.completions.create({
+            model: "llama-3.3-70b-versatile",
+            messages: messages,
+            tools: groqTools,
+            tool_choice: "auto",
         });
 
-        const result = await chat.sendMessage(query);
-        const response = result.response;
+        let responseMessage = completion.choices[0].message;
         
-        // Check if Gemini wants to call a tool
-        const functionCalls = response.functionCalls();
-        
-        if (functionCalls && functionCalls.length > 0) {
-            const call = functionCalls[0];
+        // --- Fallback for Groq Llama-3.3 tool call bug ---
+        // Sometimes Llama outputs <|python_tag|>{...} instead of triggering the actual tool_calls array.
+        if ((!responseMessage.tool_calls || responseMessage.tool_calls.length === 0) && responseMessage.content && responseMessage.content.includes('<|python_tag|>')) {
+            try {
+                const jsonStr = responseMessage.content.split('<|python_tag|>')[1].trim();
+                const parsed = JSON.parse(jsonStr);
+                if (parsed.type === "function" && parsed.name) {
+                    responseMessage.tool_calls = [{
+                        id: "call_" + Math.random().toString(36).substring(7),
+                        type: "function",
+                        function: {
+                            name: parsed.name,
+                            arguments: JSON.stringify(parsed.parameters)
+                        }
+                    }];
+                    responseMessage.content = null; // Clean up the raw text
+                }
+            } catch (e) {
+                console.error("Failed to parse fallback python_tag", e);
+            }
+        }
+
+        // Check if Groq wants to call a tool
+        if (responseMessage.tool_calls && responseMessage.tool_calls.length > 0) {
+            // Append the assistant's tool call request to the history
+            messages.push(responseMessage);
+            
+            const toolCall = responseMessage.tool_calls[0];
+            const args = JSON.parse(toolCall.function.arguments);
+            
             // 5. Execute the tool on the Python MCP Server
             const toolResult = await mcpClient.callTool({
-                name: call.name,
+                name: toolCall.function.name,
                 arguments: {
                     user_id: target_user_id,
                     jwt_token: jwt_token,
-                    limit: (call.args as any).limit || 5
+                    limit: args.limit || 5
                 }
             });
 
-            // 6. Send the tool result back to Gemini to get the final clinical answer
-            const finalResult = await chat.sendMessage([{
-                functionResponse: {
-                    name: call.name,
-                    response: { result: toolResult.content }
-                }
-            }]);
+            // 6. Send the tool result back to Groq
+            messages.push({
+                tool_call_id: toolCall.id,
+                role: "tool",
+                name: toolCall.function.name,
+                content: JSON.stringify(toolResult.content),
+            });
+
+            const finalCompletion = await groq.chat.completions.create({
+                model: "llama-3.3-70b-versatile",
+                messages: messages,
+            });
             
-            return NextResponse.json({ answer: finalResult.response.text() });
+            return NextResponse.json({ answer: finalCompletion.choices[0].message.content });
         }
 
-        return NextResponse.json({ answer: response.text() });
+        return NextResponse.json({ answer: responseMessage.content });
 
     } catch (error: any) {
         console.error("MCP Chat Error:", error);
